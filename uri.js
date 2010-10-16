@@ -435,12 +435,31 @@
 	};
 	
 	/**
-	 * @param {String} path
+	 * @param {String} input
 	 * @returns {String}
 	 */
 	
-	URI.removeDotSegments = function (path) {
-		return path;
+	URI.removeDotSegments = function (input) {
+		var output = [], s;
+		
+		while (input.length) {
+			if (input.match(/^\.\.?\//)) {
+				input = input.replace(/^\.\.?\//, "");
+			} else if (input.match(/^\/\.(\/|$)/)) {
+				input = input.replace(/^\/\.\/?/, "/");
+			} else if (input.match(/^\/\.\.(\/|$)/)) {
+				input = input.replace(/^\/\.\.\/?/, "/");
+				output.pop();
+			} else if (input === "." || input === "..") {
+				input = "";
+			} else {
+				s = input.match(/^\/?.*?(?=\/|$)/)[0];
+				input = input.slice(s.length);
+				output.push(s);
+			}
+		}
+		
+		return output.join("");
 	};
 	
 	/**
@@ -460,7 +479,6 @@
 		}
 		options = options || {};
 		
-		//transform references
 		if (!options.tolerant && relative.scheme) {
 			target.scheme = relative.scheme;
 			target.authority = relative.authority;
