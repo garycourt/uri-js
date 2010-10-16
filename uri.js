@@ -23,7 +23,7 @@
 		CR$ = "[\\x0D]",
 		DIGIT$$ = "[0-9]",
 		DQUOTE$$ = "[\\x22]",
-		HEXDIG$$ = mergeSet(DIGIT$$, "[ABCDEF]"),
+		HEXDIG$$ = mergeSet(DIGIT$$, "[A-Fa-f]"),  //case-insensitive
 		LF$$ = "[\\x0A]",
 		SP$$ = "[\\x20]",
 		PCT_ENCODED$ = subexp("%" + HEXDIG$$ + HEXDIG$$),
@@ -63,14 +63,73 @@
 		URI_REFERENCE$ = subexp(URI$ + "|" + RELATIVE_REF$),
 		ABSOLUTE_URI$ = subexp(SCHEME$ + "\\:" + HIER_PART$ + subexp("\\?" + QUERY$) + "?"),
 		
-		URI_REF = new RegExp("^" + subexp("(" + URI$ + ")|(" + RELATIVE_REF$ + ")") + "$", "i"),
-		GENERIC_REF = new RegExp("^(" + SCHEME$ + ")\\:" + subexp(subexp("\\/\\/(" + AUTHORITY$ + ")") + "?(" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?" + subexp("\\#(" + FRAGMENT$ + ")") + "?$", "i"),
-		RELATIVE_REF = new RegExp("^(){0}" + subexp(subexp("\\/\\/(" + AUTHORITY$ + ")") + "?(" + PATH_ABSOLUTE$ + "|" + PATH_NOSCHEME$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?" + subexp("\\#(" + FRAGMENT$ + ")") + "?$", "i"),
-		ABSOLUTE_REF = new RegExp("^(" + SCHEME$ + ")\\:" + subexp(subexp("\\/\\/(" + AUTHORITY$ + ")") + "?(" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?$", "i"),
-		SAMEDOC_REF = new RegExp("^" + subexp("\\#(" + FRAGMENT$ + ")") + "?$", "i"),
-		AUTHORITY = new RegExp("^" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?$", "i"),
+		URI_REF = new RegExp("^" + subexp("(" + URI$ + ")|(" + RELATIVE_REF$ + ")") + "$"),
+		GENERIC_REF  = new RegExp("^(" + SCHEME$ + ")\\:" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?" + subexp("\\#(" + FRAGMENT$ + ")") + "?$"),
+		RELATIVE_REF = new RegExp("^(){0}" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_NOSCHEME$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?" + subexp("\\#(" + FRAGMENT$ + ")") + "?$"),
+		ABSOLUTE_REF = new RegExp("^(" + SCHEME$ + ")\\:" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?$"),
+		SAMEDOC_REF = new RegExp("^" + subexp("\\#(" + FRAGMENT$ + ")") + "?$"),
+		AUTHORITY = new RegExp("^" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?$"),
 		
-		URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/([^\/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?/i;
+		NOT_SCHEME = new RegExp(mergeSet("[^]", ALPHA$$, DIGIT$$, "[\\+\\-\\.]"), "g"),
+		NOT_USERINFO = new RegExp(mergeSet("[^\\%\\:]", UNRESERVED$$, SUB_DELIMS$$), "g"),
+		NOT_HOST = new RegExp(mergeSet("[^\\%]", UNRESERVED$$, SUB_DELIMS$$), "g"),
+		NOT_PATH = new RegExp(mergeSet("[^\\%\\/\\:\\@]", UNRESERVED$$, SUB_DELIMS$$), "g"),
+		NOT_PATH_NOSCHEME = new RegExp(mergeSet("[^\\%\\/\\@]", UNRESERVED$$, SUB_DELIMS$$), "g"),
+		NOT_QUERY = new RegExp(mergeSet("[^\\%]", UNRESERVED$$, SUB_DELIMS$$, "[\\:\\@\\/\\?]"), "g"),
+		NOT_FRAGMENT = NOT_QUERY,
+		GEN_DELIMS = new RegExp(GEN_DELIMS$$, "g"),
+		UNRESERVED = new RegExp(UNRESERVED$$, "g"),
+		OTHER_CHARS = new RegExp(mergeSet("[^\\%]", UNRESERVED$$, RESERVED$$), "g"),
+		PCT_ENCODEDS = new RegExp(PCT_ENCODED$ + "+", "g"),
+		URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?([^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?/i,
+		
+		pctEncChar = function (chr) {
+			var c = chr.charCodeAt(0);
+ 
+			if (c < 128) {
+				return "%" + c.toString(16).toUpperCase();
+			}
+			else if((c > 127) && (c < 2048)) {
+				return "%" + ((c >> 6) | 192).toString(16).toUpperCase() + "%" + ((c & 63) | 128).toString(16).toUpperCase();
+			}
+			else {
+				return "%" + ((c >> 12) | 224).toString(16).toUpperCase() + "%" + (((c >> 6) & 63) | 128).toString(16).toUpperCase() + "%" + ((c & 63) | 128).toString(16).toUpperCase();
+			}
+		},
+		
+		pctDecUnreserved = function (str) {
+			var newStr = "", 
+				i = 0,
+				c, s;
+	 
+			while ( i < str.length ) {
+				c = parseInt(str.substr(i+1, 2), 16);
+	 
+				if (c < 128) {
+					s = String.fromCharCode(c);
+					if (s.match(UNRESERVED)) {
+						newStr += s;
+					} else {
+						newStr += str.substr(i, 3);
+					}
+					i += 3;
+				}
+				else if((c > 191) && (c < 224)) {
+					newStr += str.substr(i, 6);
+					i += 6;
+				}
+				else {
+					newStr += str.substr(i, 9);
+					i += 9;
+				}
+			}
+	 
+			return newStr;
+		},
+		
+		typeOf = function (o) {
+			return o === undefined ? "undefined" : (o === null ? "null" : Object.prototype.toString.call(o).split(" ").pop().split("]").shift().toLowerCase());
+		};
 	
 	//debug
 	this.URI_REF = URI_REF;
@@ -79,6 +138,7 @@
 	this.ABSOLUTE_REF = ABSOLUTE_REF;
 	this.SAMEDOC_REF = SAMEDOC_REF;
 	this.AUTHORITY = AUTHORITY;
+	this.pctEncChar = pctEncChar;
 	
 	/**
 	 * @class
@@ -88,10 +148,9 @@
 	
 	/**
 	 * @type Boolean
-	 * @default true
 	 */
 	
-	Options.prototype.validate;
+	Options.prototype.tolerant;
 	
 	/**
 	 * @type String
@@ -164,7 +223,7 @@
 	
 	/**
 	 * @type String
-	 * @enum "uri", "relative", "same-document"
+	 * @enum "uri", "absolute", "relative", "same-document"
 	 */
 	
 	Components.prototype.reference;
@@ -176,10 +235,36 @@
 	Components.prototype.errors;
 	
 	/**
+	 * @class
+	 */
+	
+	SchemeHandler = function () {};
+	
+	/**
+	 * @param {Components} components
+	 * @param {Options} options
+	 */
+	
+	SchemeHandler.prototype.parse = function (components, options) {};
+	
+	/**
+	 * @param {Components} components
+	 * @param {Options} options
+	 */
+	
+	SchemeHandler.prototype.serialize = function (components, options) {};
+	
+	/**
 	 * @namespace
 	 */
 	
 	URI = {};
+	
+	/**
+	 * @namespace
+	 */
+	
+	URI.SCHEMES = {};
 	
 	/**
 	 * @param {String} uriString
@@ -189,65 +274,254 @@
 	
 	URI.parse = function (uriString, options) {
 		var matches, 
-			components = new Components();
+			components = new Components(),
+			schemeHandler;
 		
 		uriString = uriString ? uriString.toString() : "";
 		options = options || {};
-		if (typeof options.validate !== "boolean") {
-			options.validate = true;
-		}
 		
 		matches = uriString.match(URI_REF);
 		
 		if (matches) {
 			if (matches[1]) {
 				//generic URI
-				if (options.reference && !(options.reference === "absolute" && ABSOLUTE_REF.test(uriString)) && options.reference !== "uri") {
-					components.errors.push("URI is not a " + options.reference + " reference.");
-				}
 				matches = uriString.match(GENERIC_REF);
 			} else {
 				//relative URI
-				if (options.reference && !(options.reference === "same-document" && SAMEDOC_REF.test(uriString)) && options.reference !== "relative") {
-					components.errors.push("URI is not a " + options.reference + " reference.");
-				}
 				matches = uriString.match(RELATIVE_REF);
 			}
 		} else {
-			if (options.validate) {
-				components.errors.push("URI is not valid.");
+			if (!options.tolerant) {
+				components.errors.push("URI is not strictly valid.");
 			}
 			matches = uriString.match(URI_PARSE);
 		}
 		
 		if (matches) {
+			//store each component
 			components.scheme = matches[1];
 			components.authority = matches[2];
-			components.path = matches[3] || "";
-			components.query = matches[4];
-			components.fragment = matches[5];
+			components.userinfo = matches[3];
+			components.host = matches[4];
+			components.port = parseInt(matches[5]);
+			components.path = matches[6] || "";
+			components.query = matches[7];
+			components.fragment = matches[8];
 			
-			//process authority  //TODO: Move this into first match
-			if (typeof components.authority === "string") {
-				matches = components.authority.match(AUTHORITY);
-				
-				components.userinfo = matches[1];
-				components.host = matches[2];
-				components.port = matches[3] && parseInt(matches[3]);
+			//fix port number
+			if (isNaN(components.port)) {
+				components.port = matches[5];
 			}
 			
+			//determine reference type
 			if (!components.scheme && !components.authority && !components.path && !components.query) {
 				components.reference = "same-document";
 			} else if (!components.scheme) {
 				components.reference = "relative";
+			} else if (!components.fragment) {
+				components.reference = "absolute";
 			} else {
 				components.reference = "uri";
+			}
+			
+			//check for reference errors
+			if (options.reference && options.reference !== components.reference) {
+				components.errors.push("URI is not a " + options.reference + " reference.");
+			}
+			
+			//check if a handler for the scheme exists
+			schemeHandler = URI.SCHEMES[components.scheme || options.scheme];
+			if (schemeHandler && schemeHandler.parse) {
+				//perform extra parsing
+				schemeHandler.parse(components, options);
 			}
 		} else {
 			components.errors.push("URI can not be parsed.");
 		}
 		
 		return components;
+	};
+	
+	/**
+	 * @private
+	 * @param {Components} components
+	 * @returns {String}
+	 */
+	
+	URI._recomposeAuthority = function (components) {
+		var uriTokens = [];
+		
+		if (components.userinfo !== undefined || components.host !== undefined || typeof components.port === "number") {
+			if (components.userinfo !== undefined) {
+				uriTokens.push(components.userinfo.toString().replace(NOT_USERINFO, pctEncChar));
+				uriTokens.push("@");
+			}
+			if (components.host !== undefined) {
+				uriTokens.push(components.host.toString().toLowerCase().replace(NOT_HOST, pctEncChar));
+			}
+			if (typeof components.port === "number") {
+				uriTokens.push(":");
+				uriTokens.push(components.port.toString(10));
+			}
+		}
+		
+		return uriTokens.length ? uriTokens.join("") : undefined;
+	};
+	
+	/**
+	 * @param {Components} components
+	 * @param {Options} options
+	 * @returns {String}
+	 */
+	
+	URI.serialize = function (components, options) {
+		var uriTokens = [], 
+			schemeHandler, 
+			s;
+		options = options || {};
+		
+		//check if a handler for the scheme exists
+		schemeHandler = URI.SCHEMES[components.scheme || options.scheme];
+		if (schemeHandler && schemeHandler.serialize) {
+			//perform extra serialization
+			schemeHandler.serialize(components, options);
+		}
+		
+		if (components.scheme) {
+			uriTokens.push(components.scheme.toString().toLowerCase().replace(NOT_SCHEME, ""));
+			uriTokens.push(":");
+		}
+		
+		components.authority = URI._recomposeAuthority(components);
+		if (components.authority !== undefined) {
+			uriTokens.push("//");
+			uriTokens.push(components.authority);
+			
+			if (components.path && components.path.charAt(0) !== "/") {
+				uriTokens.push("/");
+			}
+		}
+		
+		if (components.path) {
+			if (components.scheme) {
+				s = components.path.toString().replace(NOT_PATH, pctEncChar);
+			} else {
+				s = components.path.toString().replace(NOT_PATH_NOSCHEME, pctEncChar);
+			}
+			if (components.authority === undefined) {
+				s = s.replace(/^\/\//, "/%2F");  //don't allow the path to start with "//"
+			}
+			uriTokens.push(s);
+		}
+		
+		if (components.query) {
+			uriTokens.push("?");
+			uriTokens.push(components.query.toString().replace(NOT_QUERY, pctEncChar));
+		}
+		
+		if (components.fragment) {
+			uriTokens.push("#");
+			uriTokens.push(components.fragment.toString().replace(NOT_FRAGMENT, pctEncChar));
+		}
+		
+		return uriTokens
+			.join('')  //merge tokens into a string
+			.replace(PCT_ENCODEDS, pctDecUnreserved)  //undecode unreserved characters
+			//.replace(OTHER_CHARS, pctEncChar)  //replace non-URI characters
+			.replace(/%[0-9A-Fa-f]{2}/g, function (str) {  //uppercase percent encoded characters
+				return str.toUpperCase();
+			})
+		;
+	};
+	
+	/**
+	 * @param {String} path
+	 * @returns {String}
+	 */
+	
+	URI.removeDotSegments = function (path) {
+		return path;
+	};
+	
+	/**
+	 * @param {Components} base
+	 * @param {Components} relative
+	 * @param {Options} [options]
+	 * @param {Boolean} [skipNormalization]
+	 * @returns {Components}
+	 */
+	
+	URI.resolveComponents = function (base, relative, options, skipNormalization) {
+		var target = new Components();
+		
+		if (!skipNormalization) {
+			base = URI.parse(URI.serialize(base, options), options);  //normalize base components
+			relative = URI.parse(URI.serialize(relative, options), options);  //normalize relative components
+		}
+		options = options || {};
+		
+		//transform references
+		if (!options.tolerant && relative.scheme) {
+			target.scheme = relative.scheme;
+			target.authority = relative.authority;
+			target.userinfo = relative.userinfo;
+			target.host = relative.host;
+			target.port = relative.port;
+			target.path = URI.removeDotSegments(relative.path);
+			target.query = relative.query;
+		} else {
+			if (relative.authority !== undefined) {
+				target.authority = relative.authority;
+				target.userinfo = relative.userinfo;
+				target.host = relative.host;
+				target.port = relative.port;
+				target.path = URI.removeDotSegments(relative.path);
+				target.query = relative.query;
+			} else {
+				if (!relative.path) {
+					target.path = base.path;
+					if (relative.query !== undefined) {
+						target.query = relative.query;
+					} else {
+						target.query = base.query;
+					}
+				} else {
+					if (relative.path.charAt(0) === "/") {
+						target.path = URI.removeDotSegments(relative.path);
+					} else {
+						if (base.authority !== undefined && !base.path) {
+							target.path = "/" + relative.path;
+						} else if (!base.path) {
+							target.path = relative.path;
+						} else {
+							target.path = base.path.slice(0, base.path.lastIndexOf("/") + 1) + relative.path;
+						}
+						target.path = URI.removeDotSegments(target.path);
+					}
+					target.query = relative.query;
+				}
+				target.authority = base.authority;
+				target.userinfo = base.userinfo;
+				target.host = base.host;
+				target.port = base.port;
+			}
+			target.scheme = base.scheme;
+		}
+		
+		target.fragment = relative.fragment;
+		
+		return target;
+	};
+	
+	/**
+	 * @param {String} baseURI
+	 * @param {String} relativeURI
+	 * @param {Options} [options]
+	 * @returns {String}
+	 */
+	
+	URI.resolve = function (baseURI, relativeURI, options) {
+		return URI.serialize(URI.resolveComponents(URI.parse(baseURI, options), URI.parse(relativeURI, options), options, true), options);
 	};
 	
 	this.URI = URI;
