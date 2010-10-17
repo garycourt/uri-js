@@ -1,28 +1,13 @@
-//calls o(true) if no error is thrown
-function okNoError(func, msg) {
-	try {
-		func();
-		ok(true, msg);
-	} catch (e) {
-		ok(false, msg + ': ' + e);
-	}
-}
-
-//calls ok(true) if an error is thrown
-function okError(func, msg) {
-	try {
-		func();
-		ok(false, msg);
-	} catch (e) {
-		ok(true, msg + ': ' + e);
-	}
-}
-
 //
 //
 // Tests
 //
 //
+
+test("Acquire URI", function () {
+	URI = require("./uri").URI;
+	ok(URI);
+});
 
 test("URI Parsing", function () {
 	var components;
@@ -190,4 +175,36 @@ test("URI Resolving", function () {
 test("URI Equals", function () {
 	//test from RFC 3986
 	equal(URI.equal("example://a/b/c/%7Bfoo%7D", "eXAMPLE://a/./b/../b/%63/%7bfoo%7d"), true);
+});
+
+test("Escape Component", function () {
+	var input = "", output = "";
+	for (var d = 32; d < 128; ++d) {
+		input += String.fromCharCode(d);
+		if (String.fromCharCode(d).match(/[0-9A-Za-z\-\.\_\~\!\$\&\'\(\)\*\+\,\;\=]/)) {
+			output += String.fromCharCode(d);
+		} else {
+			output += "%" + d.toString(16).toUpperCase();
+		}
+	}
+	input += "\u00c0\u30a2";
+	output += "%C3%80%E3%82%A2";
+	
+	equal(URI.escapeComponent(input), output);
+});
+
+test("Unescape Component", function () {
+	var input = "", output = "";
+	for (var d = 32; d < 128; ++d) {
+		input += String.fromCharCode(d);
+		if (String.fromCharCode(d).match(/[0-9A-Za-z\-\.\_\~\!\$\&\'\(\)\*\+\,\;\=]/)) {
+			output += String.fromCharCode(d);
+		} else {
+			output += "%" + d.toString(16).toUpperCase();
+		}
+	}
+	input += "\u00c0\u30a2";
+	output += "%C3%80%E3%82%A2";
+	
+	equal(URI.unescapeComponent(output), input);
 });

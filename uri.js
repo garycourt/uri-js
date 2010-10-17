@@ -26,11 +26,15 @@
  * or implied, of Gary Court.
  */
 
-/*jslint white: true, onevar: true, undef: true, eqeqeq: true, newcap: true, immed: true */
+/*jslint white: true, sub: true, onevar: true, undef: true, eqeqeq: true, newcap: true, immed: true, indent: 4 */
+
+var exports = exports || this,
+	require = require || function () {
+		return exports;
+	};
 
 (function () {
-	
-	var Options, Components, SchemeHandler, URI,
+	var	Options, URIComponents, SchemeHandler, URI,
 	
 		mergeSet = function () {
 			var set = arguments[0],
@@ -107,7 +111,7 @@
 		NOT_PATH_NOSCHEME = new RegExp(mergeSet("[^\\%\\/\\@]", UNRESERVED$$, SUB_DELIMS$$), "g"),
 		NOT_QUERY = new RegExp(mergeSet("[^\\%]", UNRESERVED$$, SUB_DELIMS$$, "[\\:\\@\\/\\?]"), "g"),
 		NOT_FRAGMENT = NOT_QUERY,
-		GEN_DELIMS = new RegExp(GEN_DELIMS$$, "g"),
+		ESCAPE = new RegExp(mergeSet("[^]", UNRESERVED$$, SUB_DELIMS$$), "g"),
 		UNRESERVED = new RegExp(UNRESERVED$$, "g"),
 		OTHER_CHARS = new RegExp(mergeSet("[^\\%]", UNRESERVED$$, RESERVED$$), "g"),
 		PCT_ENCODEDS = new RegExp(PCT_ENCODED$ + "+", "g"),
@@ -163,6 +167,34 @@
 			return newStr;
 		},
 		
+		pctDecChars = function (str) {
+			var newStr = "", 
+				i = 0,
+				c, c2, c3;
+	 
+			while (i < str.length) {
+				c = parseInt(str.substr(i + 1, 2), 16);
+	 
+				if (c < 128) {
+					newStr += String.fromCharCode(c);
+					i += 3;
+				}
+				else if ((c > 191) && (c < 224)) {
+					c2 = parseInt(str.substr(i + 4, 2), 16);
+					newStr += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
+					i += 6;
+				}
+				else {
+					c2 = parseInt(str.substr(i + 4, 2), 16);
+					c3 = parseInt(str.substr(i + 7, 2), 16);
+					newStr += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+					i += 9;
+				}
+			}
+	 
+			return newStr;
+		},
+		
 		typeOf = function (o) {
 			return o === undefined ? "undefined" : (o === null ? "null" : Object.prototype.toString.call(o).split(" ").pop().split("]").shift().toLowerCase());
 		};
@@ -198,11 +230,11 @@
 	 * @class
 	 */
 	
-	Components = function () {
+	URIComponents = function () {
 		this.errors = [];
 	};
 	
-	Components.prototype = {
+	URIComponents.prototype = {
 		/**
 		 * @type String
 		 */
@@ -272,14 +304,14 @@
 	SchemeHandler = function () {};
 	
 	/**
-	 * @param {Components} components
+	 * @param {URIComponents} components
 	 * @param {Options} options
 	 */
 	
 	SchemeHandler.prototype.parse = function (components, options) {};
 	
 	/**
-	 * @param {Components} components
+	 * @param {URIComponents} components
 	 * @param {Options} options
 	 */
 	
@@ -300,16 +332,20 @@
 	/**
 	 * @param {String} uriString
 	 * @param {Options} [options]
-	 * @returns {Components}
+	 * @returns {URIComponents}
 	 */
 	
 	URI.parse = function (uriString, options) {
 		var matches, 
-			components = new Components(),
+			components = new URIComponents(),
 			schemeHandler;
 		
 		uriString = uriString ? uriString.toString() : "";
 		options = options || {};
+		
+		if (options.reference === "suffix") {
+			uriString = (options.scheme ? options.scheme + ":" : "") + "//" + uriString;
+		}
 		
 		matches = uriString.match(URI_REF);
 		
@@ -373,7 +409,7 @@
 			}
 			
 			//check for reference errors
-			if (options.reference && options.reference !== components.reference) {
+			if (options.reference && options.reference !== "suffix" && options.reference !== components.reference) {
 				components.errors.push("URI is not a " + options.reference + " reference.");
 			}
 			
@@ -392,7 +428,7 @@
 	
 	/**
 	 * @private
-	 * @param {Components} components
+	 * @param {URIComponents} components
 	 * @returns {String}
 	 */
 	
@@ -445,7 +481,7 @@
 	};
 	
 	/**
-	 * @param {Components} components
+	 * @param {URIComponents} components
 	 * @param {Options} options
 	 * @returns {String}
 	 */
@@ -463,14 +499,17 @@
 			schemeHandler.serialize(components, options);
 		}
 		
-		if (components.scheme) {
+		if (options.reference !== "suffix" && components.scheme) {
 			uriTokens.push(components.scheme.toString().toLowerCase().replace(NOT_SCHEME, ""));
 			uriTokens.push(":");
 		}
 		
 		components.authority = URI._recomposeAuthority(components);
 		if (components.authority !== undefined) {
-			uriTokens.push("//");
+			if (options.reference !== "suffix") {
+				uriTokens.push("//");
+			}
+			
 			uriTokens.push(components.authority);
 			
 			if (components.path && components.path.charAt(0) !== "/") {
@@ -514,15 +553,15 @@
 	};
 	
 	/**
-	 * @param {Components} base
-	 * @param {Components} relative
+	 * @param {URIComponents} base
+	 * @param {URIComponents} relative
 	 * @param {Options} [options]
 	 * @param {Boolean} [skipNormalization]
-	 * @returns {Components}
+	 * @returns {URIComponents}
 	 */
 	
 	URI.resolveComponents = function (base, relative, options, skipNormalization) {
-		var target = new Components();
+		var target = new URIComponents();
 		
 		if (!skipNormalization) {
 			base = URI.parse(URI.serialize(base, options), options);  //normalize base components
@@ -594,9 +633,9 @@
 	};
 	
 	/**
-	 * @param {String|Components} uri
+	 * @param {String|URIComponents} uri
 	 * @param {Options} options
-	 * @returns {String|Components}
+	 * @returns {String|URIComponents}
 	 */
 	
 	URI.normalize = function (uri, options) {
@@ -610,8 +649,8 @@
 	};
 	
 	/**
-	 * @param {String|Components} uriA
-	 * @param {String|Components} uriB
+	 * @param {String|URIComponents} uriA
+	 * @param {String|URIComponents} uriB
 	 * @param {Options} options
 	 */
 	
@@ -631,6 +670,28 @@
 		return uriA === uriB;
 	};
 	
-	this.URI = URI;
+	/**
+	 * @param {String} str
+	 * @returns {String}
+	 */
+	
+	URI.escapeComponent = function (str) {
+		return str && str.toString().replace(ESCAPE, pctEncChar);
+	};
+	
+	/**
+	 * @param {String} str
+	 * @returns {String}
+	 */
+	
+	URI.unescapeComponent = function (str) {
+		return str && str.toString().replace(PCT_ENCODEDS, pctDecChars);
+	};
+	
+	//export API
+	exports.Options = Options;
+	exports.URIComponents = URIComponents;
+	exports.SchemeHandler = SchemeHandler;
+	exports.URI = URI;
 	
 }());
