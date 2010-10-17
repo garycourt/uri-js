@@ -186,3 +186,8 @@ test("URI Resolving", function () {
 	equal(URI.resolve(base, "http:g", {tolerant:true}), "http://a/b/c/g", "http:g");
       
 });
+
+test("URI Equals", function () {
+	//test from RFC 3986
+	equal(URI.equal("example://a/b/c/%7Bfoo%7D", "eXAMPLE://a/./b/../b/%63/%7bfoo%7d"), true);
+});

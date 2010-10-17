@@ -417,6 +417,34 @@
 	};
 	
 	/**
+	 * @param {String} input
+	 * @returns {String}
+	 */
+	
+	URI.removeDotSegments = function (input) {
+		var output = [], s;
+		
+		while (input.length) {
+			if (input.match(RDS1)) {
+				input = input.replace(RDS1, "");
+			} else if (input.match(RDS2)) {
+				input = input.replace(RDS2, "/");
+			} else if (input.match(RDS3)) {
+				input = input.replace(RDS3, "/");
+				output.pop();
+			} else if (input === "." || input === "..") {
+				input = "";
+			} else {
+				s = input.match(RDS5)[0];
+				input = input.slice(s.length);
+				output.push(s);
+			}
+		}
+		
+		return output.join("");
+	};
+	
+	/**
 	 * @param {Components} components
 	 * @param {Options} options
 	 * @returns {String}
@@ -451,11 +479,14 @@
 		}
 		
 		if (components.path) {
+			s = URI.removeDotSegments(components.path.toString().replace(/%2E/ig, "."));
+			
 			if (components.scheme) {
-				s = components.path.toString().replace(NOT_PATH, pctEncChar);
+				s = s.replace(NOT_PATH, pctEncChar);
 			} else {
-				s = components.path.toString().replace(NOT_PATH_NOSCHEME, pctEncChar);
+				s = s.replace(NOT_PATH_NOSCHEME, pctEncChar);
 			}
+			
 			if (components.authority === undefined) {
 				s = s.replace(/^\/\//, "/%2F");  //don't allow the path to start with "//"
 			}
@@ -480,34 +511,6 @@
 				return str.toUpperCase();
 			})
 		;
-	};
-	
-	/**
-	 * @param {String} input
-	 * @returns {String}
-	 */
-	
-	URI.removeDotSegments = function (input) {
-		var output = [], s;
-		
-		while (input.length) {
-			if (input.match(RDS1)) {
-				input = input.replace(RDS1, "");
-			} else if (input.match(RDS2)) {
-				input = input.replace(RDS2, "/");
-			} else if (input.match(RDS3)) {
-				input = input.replace(RDS3, "/");
-				output.pop();
-			} else if (input === "." || input === "..") {
-				input = "";
-			} else {
-				s = input.match(RDS5)[0];
-				input = input.slice(s.length);
-				output.push(s);
-			}
-		}
-		
-		return output.join("");
 	};
 	
 	/**
@@ -588,6 +591,44 @@
 	
 	URI.resolve = function (baseURI, relativeURI, options) {
 		return URI.serialize(URI.resolveComponents(URI.parse(baseURI, options), URI.parse(relativeURI, options), options, true), options);
+	};
+	
+	/**
+	 * @param {String|Components} uri
+	 * @param {Options} options
+	 * @returns {String|Components}
+	 */
+	
+	URI.normalize = function (uri, options) {
+		if (typeof uri === "string") {
+			return URI.serialize(URI.parse(uri, options), options);
+		} else if (typeOf(uri) === "object") {
+			return URI.parse(URI.serialize(uri, options), options);
+		}
+		
+		return uri;
+	};
+	
+	/**
+	 * @param {String|Components} uriA
+	 * @param {String|Components} uriB
+	 * @param {Options} options
+	 */
+	
+	URI.equal = function (uriA, uriB, options) {
+		if (typeof uriA === "string") {
+			uriA = URI.serialize(URI.parse(uriA, options), options);
+		} else if (typeOf(uriA) === "object") {
+			uriA = URI.serialize(uriA, options);
+		}
+		
+		if (typeof uriB === "string") {
+			uriB = URI.serialize(URI.parse(uriB, options), options);
+		} else if (typeOf(uriB) === "object") {
+			uriB = URI.serialize(uriB, options);
+		}
+		
+		return uriA === uriB;
 	};
 	
 	this.URI = URI;
