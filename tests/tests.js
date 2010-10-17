@@ -25,7 +25,87 @@ function okError(func, msg) {
 //
 
 test("URI Parsing", function () {
-	var components = URI.parse("uri://user:pass@example.com:123/one/two.three?q1=a1&q2=a2#body");
+	var components;
+	
+	//scheme
+	components = URI.parse("uri:");
+	equal(components.scheme, "uri", "scheme");
+	equal(components.authority, undefined, "authority");
+	equal(components.userinfo, undefined, "userinfo");
+	equal(components.host, undefined, "host");
+	equal(components.port, undefined, "port");
+	equal(components.path, "", "path");
+	equal(components.query, undefined, "query");
+	equal(components.fragment, undefined, "fragment");
+	
+	//userinfo
+	components = URI.parse("//@");
+	equal(components.scheme, undefined, "scheme");
+	equal(components.authority, "@", "authority");
+	equal(components.userinfo, "", "userinfo");
+	equal(components.host, "", "host");
+	equal(components.port, undefined, "port");
+	equal(components.path, "", "path");
+	equal(components.query, undefined, "query");
+	equal(components.fragment, undefined, "fragment");
+	
+	//host
+	components = URI.parse("//");
+	equal(components.scheme, undefined, "scheme");
+	equal(components.authority, "", "authority");
+	equal(components.userinfo, undefined, "userinfo");
+	equal(components.host, "", "host");
+	equal(components.port, undefined, "port");
+	equal(components.path, "", "path");
+	equal(components.query, undefined, "query");
+	equal(components.fragment, undefined, "fragment");
+	
+	//port
+	components = URI.parse("//:");
+	equal(components.scheme, undefined, "scheme");
+	equal(components.authority, ":", "authority");
+	equal(components.userinfo, undefined, "userinfo");
+	equal(components.host, "", "host");
+	equal(components.port, "", "port");
+	equal(components.path, "", "path");
+	equal(components.query, undefined, "query");
+	equal(components.fragment, undefined, "fragment");
+	
+	//path
+	components = URI.parse("");
+	equal(components.scheme, undefined, "scheme");
+	equal(components.authority, undefined, "authority");
+	equal(components.userinfo, undefined, "userinfo");
+	equal(components.host, undefined, "host");
+	equal(components.port, undefined, "port");
+	equal(components.path, "", "path");
+	equal(components.query, undefined, "query");
+	equal(components.fragment, undefined, "fragment");
+	
+	//query
+	components = URI.parse("?");
+	equal(components.scheme, undefined, "scheme");
+	equal(components.authority, undefined, "authority");
+	equal(components.userinfo, undefined, "userinfo");
+	equal(components.host, undefined, "host");
+	equal(components.port, undefined, "port");
+	equal(components.path, "", "path");
+	equal(components.query, "", "query");
+	equal(components.fragment, undefined, "fragment");
+	
+	//fragment
+	components = URI.parse("#");
+	equal(components.scheme, undefined, "scheme");
+	equal(components.authority, undefined, "authority");
+	equal(components.userinfo, undefined, "userinfo");
+	equal(components.host, undefined, "host");
+	equal(components.port, undefined, "port");
+	equal(components.path, "", "path");
+	equal(components.query, undefined, "query");
+	equal(components.fragment, "", "fragment");
+	
+	//all
+	components = URI.parse("uri://user:pass@example.com:123/one/two.three?q1=a1&q2=a2#body");
 	equal(components.scheme, "uri", "scheme");
 	equal(components.authority, "user:pass@example.com:123", "authority");
 	equal(components.userinfo, "user:pass", "userinfo");

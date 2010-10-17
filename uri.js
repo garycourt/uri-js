@@ -117,6 +117,7 @@
 		RDS3 = /^\/\.\.(\/|$)/,
 		RDS4 = /^\.\.?$/,
 		RDS5 = /^\/?.*?(?=\/|$)/,
+		NO_MATCH_IS_UNDEFINED = ("").match(/(){0}/)[1] === undefined,
 		
 		pctEncChar = function (chr) {
 			var c = chr.charCodeAt(0);
@@ -328,19 +329,36 @@
 		}
 		
 		if (matches) {
-			//store each component
-			components.scheme = matches[1];
-			components.authority = matches[2];
-			components.userinfo = matches[3];
-			components.host = matches[4];
-			components.port = parseInt(matches[5], 10);
-			components.path = matches[6] || "";
-			components.query = matches[7];
-			components.fragment = matches[8];
-			
-			//fix port number
-			if (isNaN(components.port)) {
-				components.port = matches[5];
+			if (NO_MATCH_IS_UNDEFINED) {
+				//store each component
+				components.scheme = matches[1];
+				components.authority = matches[2];
+				components.userinfo = matches[3];
+				components.host = matches[4];
+				components.port = parseInt(matches[5], 10);
+				components.path = matches[6] || "";
+				components.query = matches[7];
+				components.fragment = matches[8];
+				
+				//fix port number
+				if (isNaN(components.port)) {
+					components.port = matches[5];
+				}
+			} else {  //IE FIX for improper RegExp matching
+				//store each component
+				components.scheme = matches[1] || undefined;
+				components.authority = (uriString.indexOf("//") !== -1 ? matches[2] : undefined);
+				components.userinfo = (uriString.indexOf("@") !== -1 ? matches[3] : undefined);
+				components.host = (uriString.indexOf("//") !== -1 ? matches[4] : undefined);
+				components.port = parseInt(matches[5], 10);
+				components.path = matches[6] || "";
+				components.query = (uriString.indexOf("?") !== -1 ? matches[7] : undefined);
+				components.fragment = (uriString.indexOf("#") !== -1 ? matches[8] : undefined);
+				
+				//fix port number
+				if (isNaN(components.port)) {
+					components.port = (uriString.match(/\/\/.*\:(?:\/|\?|\#|$)/) ? matches[4] : undefined);
+				}
 			}
 			
 			//determine reference type
