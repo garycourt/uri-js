@@ -1,3 +1,12 @@
+/**
+ * URI.js
+ * 
+ * @fileOverview An RFC 3986 compliant, scheme extendable URI parsing/validating/resolving library for JavaScript.
+ * @author <a href="mailto:gary.court@gmail.com">Gary Court</a>
+ * @version 1.0
+ * @see http://github.com/garycourt/uri-js
+ */
+
 /*
  * Copyright 2010 Gary Court. All rights reserved.
  * 
