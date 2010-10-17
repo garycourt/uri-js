@@ -1,6 +1,36 @@
+/*
+ * Copyright 2010 Gary Court. All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without modification, are
+ * permitted provided that the following conditions are met:
+ * 
+ *    1. Redistributions of source code must retain the above copyright notice, this list of
+ *       conditions and the following disclaimer.
+ * 
+ *    2. Redistributions in binary form must reproduce the above copyright notice, this list
+ *       of conditions and the following disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY GARY COURT ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL GARY COURT OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 
+ * The views and conclusions contained in the software and documentation are those of the
+ * authors and should not be interpreted as representing official policies, either expressed
+ * or implied, of Gary Court.
+ */
+
+/*jslint white: true, onevar: true, undef: true, eqeqeq: true, newcap: true, immed: true */
+
 (function () {
 	
-	var Options, Components, URI,
+	var Options, Components, SchemeHandler, URI,
 	
 		mergeSet = function () {
 			var set = arguments[0],
@@ -82,6 +112,11 @@
 		OTHER_CHARS = new RegExp(mergeSet("[^\\%]", UNRESERVED$$, RESERVED$$), "g"),
 		PCT_ENCODEDS = new RegExp(PCT_ENCODED$ + "+", "g"),
 		URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?([^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?/i,
+		RDS1 = /^\.\.?\//,
+		RDS2 = /^\/\.(\/|$)/,
+		RDS3 = /^\/\.\.(\/|$)/,
+		RDS4 = /^\.\.?$/,
+		RDS5 = /^\/?.*?(?=\/|$)/,
 		
 		pctEncChar = function (chr) {
 			var c = chr.charCodeAt(0);
@@ -89,7 +124,7 @@
 			if (c < 128) {
 				return "%" + c.toString(16).toUpperCase();
 			}
-			else if((c > 127) && (c < 2048)) {
+			else if ((c > 127) && (c < 2048)) {
 				return "%" + ((c >> 6) | 192).toString(16).toUpperCase() + "%" + ((c & 63) | 128).toString(16).toUpperCase();
 			}
 			else {
@@ -102,8 +137,8 @@
 				i = 0,
 				c, s;
 	 
-			while ( i < str.length ) {
-				c = parseInt(str.substr(i+1, 2), 16);
+			while (i < str.length) {
+				c = parseInt(str.substr(i + 1, 2), 16);
 	 
 				if (c < 128) {
 					s = String.fromCharCode(c);
@@ -114,7 +149,7 @@
 					}
 					i += 3;
 				}
-				else if((c > 191) && (c < 224)) {
+				else if ((c > 191) && (c < 224)) {
 					newStr += str.substr(i, 6);
 					i += 6;
 				}
@@ -131,39 +166,32 @@
 			return o === undefined ? "undefined" : (o === null ? "null" : Object.prototype.toString.call(o).split(" ").pop().split("]").shift().toLowerCase());
 		};
 	
-	//debug
-	this.URI_REF = URI_REF;
-	this.GENERIC_REF = GENERIC_REF;
-	this.RELATIVE_REF = RELATIVE_REF;
-	this.ABSOLUTE_REF = ABSOLUTE_REF;
-	this.SAMEDOC_REF = SAMEDOC_REF;
-	this.AUTHORITY = AUTHORITY;
-	this.pctEncChar = pctEncChar;
-	
 	/**
 	 * @class
 	 */
 	
 	Options = function () {};
 	
-	/**
-	 * @type Boolean
-	 */
-	
-	Options.prototype.tolerant;
-	
-	/**
-	 * @type String
-	 */
-	
-	Options.prototype.scheme;
-	
-	/**
-	 * @type String
-	 * @enum "uri", "absolute", "relative", "same-document", "suffix"
-	 */
-	
-	Options.prototype.reference;
+	Options.prototype = {
+		/**
+		 * @type Boolean
+		 */
+		
+		tolerant : undefined,
+		
+		/**
+		 * @type String
+		 */
+		
+		scheme : undefined,
+		
+		/**
+		 * @type String
+		 * @enum "uri", "absolute", "relative", "same-document", "suffix"
+		 */
+		
+		reference : undefined
+	};
 	
 	/**
 	 * @class
@@ -173,66 +201,68 @@
 		this.errors = [];
 	};
 	
-	/**
-	 * @type String
-	 */
-	
-	Components.prototype.scheme;
-	
-	/**
-	 * @type String
-	 */
-	
-	Components.prototype.authority;
-	
-	/**
-	 * @type String
-	 */
-	
-	Components.prototype.userinfo;
-	
-	/**
-	 * @type String
-	 */
-	
-	Components.prototype.host;
-	
-	/**
-	 * @type Number
-	 */
-	
-	Components.prototype.port;
-	
-	/**
-	 * @type String
-	 */
-	
-	Components.prototype.path;
-	
-	/**
-	 * @type String
-	 */
-	
-	Components.prototype.query;
-	
-	/**
-	 * @type String
-	 */
-	
-	Components.prototype.fragment;
-	
-	/**
-	 * @type String
-	 * @enum "uri", "absolute", "relative", "same-document"
-	 */
-	
-	Components.prototype.reference;
-	
-	/**
-	 * @type Array
-	 */
-	
-	Components.prototype.errors;
+	Components.prototype = {
+		/**
+		 * @type String
+		 */
+		
+		scheme : undefined,
+		
+		/**
+		 * @type String
+		 */
+		
+		authority : undefined,
+		
+		/**
+		 * @type String
+		 */
+		
+		userinfo : undefined,
+		
+		/**
+		 * @type String
+		 */
+		
+		host : undefined,
+		
+		/**
+		 * @type Number
+		 */
+		
+		port : undefined,
+		
+		/**
+		 * @type String
+		 */
+		
+		path : undefined,
+		
+		/**
+		 * @type String
+		 */
+		
+		query : undefined,
+		
+		/**
+		 * @type String
+		 */
+		
+		fragment : undefined,
+		
+		/**
+		 * @type String
+		 * @enum "uri", "absolute", "relative", "same-document"
+		 */
+		
+		reference : undefined,
+		
+		/**
+		 * @type Array
+		 */
+		
+		errors : undefined
+	};
 	
 	/**
 	 * @class
@@ -303,7 +333,7 @@
 			components.authority = matches[2];
 			components.userinfo = matches[3];
 			components.host = matches[4];
-			components.port = parseInt(matches[5]);
+			components.port = parseInt(matches[5], 10);
 			components.path = matches[6] || "";
 			components.query = matches[7];
 			components.fragment = matches[8];
@@ -443,17 +473,17 @@
 		var output = [], s;
 		
 		while (input.length) {
-			if (input.match(/^\.\.?\//)) {
-				input = input.replace(/^\.\.?\//, "");
-			} else if (input.match(/^\/\.(\/|$)/)) {
-				input = input.replace(/^\/\.\/?/, "/");
-			} else if (input.match(/^\/\.\.(\/|$)/)) {
-				input = input.replace(/^\/\.\.\/?/, "/");
+			if (input.match(RDS1)) {
+				input = input.replace(RDS1, "");
+			} else if (input.match(RDS2)) {
+				input = input.replace(RDS2, "/");
+			} else if (input.match(RDS3)) {
+				input = input.replace(RDS3, "/");
 				output.pop();
 			} else if (input === "." || input === "..") {
 				input = "";
 			} else {
-				s = input.match(/^\/?.*?(?=\/|$)/)[0];
+				s = input.match(RDS5)[0];
 				input = input.slice(s.length);
 				output.push(s);
 			}
