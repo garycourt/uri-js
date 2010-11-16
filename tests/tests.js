@@ -14,6 +14,7 @@ test("URI Parsing", function () {
 	
 	//scheme
 	components = URI.parse("uri:");
+	equal(components.errors.length, 0, "scheme errors");
 	equal(components.scheme, "uri", "scheme");
 	equal(components.authority, undefined, "authority");
 	equal(components.userinfo, undefined, "userinfo");
@@ -25,6 +26,7 @@ test("URI Parsing", function () {
 	
 	//userinfo
 	components = URI.parse("//@");
+	equal(components.errors.length, 0, "userinfo errors");
 	equal(components.scheme, undefined, "scheme");
 	equal(components.authority, "@", "authority");
 	equal(components.userinfo, "", "userinfo");
@@ -36,6 +38,7 @@ test("URI Parsing", function () {
 	
 	//host
 	components = URI.parse("//");
+	equal(components.errors.length, 0, "host errors");
 	equal(components.scheme, undefined, "scheme");
 	equal(components.authority, "", "authority");
 	equal(components.userinfo, undefined, "userinfo");
@@ -47,6 +50,7 @@ test("URI Parsing", function () {
 	
 	//port
 	components = URI.parse("//:");
+	equal(components.errors.length, 0, "port errors");
 	equal(components.scheme, undefined, "scheme");
 	equal(components.authority, ":", "authority");
 	equal(components.userinfo, undefined, "userinfo");
@@ -58,6 +62,7 @@ test("URI Parsing", function () {
 	
 	//path
 	components = URI.parse("");
+	equal(components.errors.length, 0, "path errors");
 	equal(components.scheme, undefined, "scheme");
 	equal(components.authority, undefined, "authority");
 	equal(components.userinfo, undefined, "userinfo");
@@ -69,6 +74,7 @@ test("URI Parsing", function () {
 	
 	//query
 	components = URI.parse("?");
+	equal(components.errors.length, 0, "query errors");
 	equal(components.scheme, undefined, "scheme");
 	equal(components.authority, undefined, "authority");
 	equal(components.userinfo, undefined, "userinfo");
@@ -80,6 +86,7 @@ test("URI Parsing", function () {
 	
 	//fragment
 	components = URI.parse("#");
+	equal(components.errors.length, 0, "fragment errors");
 	equal(components.scheme, undefined, "scheme");
 	equal(components.authority, undefined, "authority");
 	equal(components.userinfo, undefined, "userinfo");
@@ -91,6 +98,7 @@ test("URI Parsing", function () {
 	
 	//all
 	components = URI.parse("uri://user:pass@example.com:123/one/two.three?q1=a1&q2=a2#body");
+	equal(components.errors.length, 0, "all errors");
 	equal(components.scheme, "uri", "scheme");
 	equal(components.authority, "user:pass@example.com:123", "authority");
 	equal(components.userinfo, "user:pass", "userinfo");
