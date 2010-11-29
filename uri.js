@@ -366,7 +366,9 @@ var exports = exports || this,
 				//relative URI
 				matches = uriString.match(RELATIVE_REF);
 			}
-		} else {
+		} 
+		
+		if (!matches) {
 			if (!options.tolerant) {
 				components.errors.push("URI is not strictly valid.");
 			}
