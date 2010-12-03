@@ -1,13 +1,15 @@
 /**
  * URI.js
  * 
- * @fileOverview An RFC 3986 compliant, scheme extendable URI parsing/validating/resolving library for JavaScript.
+ * @fileoverview An RFC 3986 compliant, scheme extendable URI parsing/validating/resolving library for JavaScript.
  * @author <a href="mailto:gary.court@gmail.com">Gary Court</a>
  * @version 1.0
  * @see http://github.com/garycourt/uri-js
  */
 
-/*
+/**
+ * @license http://github.com/garycourt/uri-js
+ * 
  * Copyright 2010 Gary Court. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -43,9 +45,12 @@ var exports = exports || this,
 	};
 
 (function () {
-	var	Options, URIComponents, SchemeHandler, URI,
-	
-		mergeSet = function () {
+	var	
+		/**
+		 * @param {...string} sets
+		 * @return {string}
+		 */
+		mergeSet = function (sets) {
 			var set = arguments[0],
 				x = 1,
 				nextSet = arguments[x];
@@ -58,6 +63,10 @@ var exports = exports || this,
 			return set;
 		},
 		
+		/**
+		 * @param {string} str
+		 * @return {string}
+		 */
 		subexp = function (str) {
 			return "(?:" + str + ")";
 		},
@@ -132,6 +141,10 @@ var exports = exports || this,
 		RDS5 = /^\/?.*?(?=\/|$)/,
 		NO_MATCH_IS_UNDEFINED = ("").match(/(){0}/)[1] === undefined,
 		
+		/**
+		 * @param {string} chr
+		 * @return {string}
+		 */
 		pctEncChar = function (chr) {
 			var c = chr.charCodeAt(0);
  
@@ -146,6 +159,10 @@ var exports = exports || this,
 			}
 		},
 		
+		/**
+		 * @param {string} str
+		 * @return {string}
+		 */
 		pctDecUnreserved = function (str) {
 			var newStr = "", 
 				i = 0,
@@ -176,6 +193,10 @@ var exports = exports || this,
 			return newStr;
 		},
 		
+		/**
+		 * @param {string} str
+		 * @return {string}
+		 */
 		pctDecChars = function (str) {
 			var newStr = "", 
 				i = 0,
@@ -204,19 +225,34 @@ var exports = exports || this,
 			return newStr;
 		},
 		
+		/**
+		 * @return {string}
+		 */
 		typeOf = function (o) {
 			return o === undefined ? "undefined" : (o === null ? "null" : Object.prototype.toString.call(o).split(" ").pop().split("]").shift().toLowerCase());
-		};
+		},
+		
+		/** @constructor */
+		Options = function () {}, 
+		
+		/** @constructor */
+		URIComponents = function () {
+			this.errors = [];
+		}, 
+		
+		/** @constructor */
+		SchemeHandler = function () {},
+		
+		/** @namespace */ 
+		URI = {};
 	
 	/**
-	 * @class
+	 * Options
 	 */
-	
-	Options = function () {};
 	
 	Options.prototype = {
 		/**
-		 * @type Boolean
+		 * @type boolean
 		 */
 		
 		tolerant : undefined,
@@ -229,19 +265,15 @@ var exports = exports || this,
 		
 		/**
 		 * @type String
-		 * @enum "uri", "absolute", "relative", "same-document", "suffix"
+		 * @values "uri", "absolute", "relative", "same-document", "suffix"
 		 */
 		
 		reference : undefined
 	};
 	
 	/**
-	 * @class
+	 * URIComponents
 	 */
-	
-	URIComponents = function () {
-		this.errors = [];
-	};
 	
 	URIComponents.prototype = {
 		/**
@@ -269,32 +301,32 @@ var exports = exports || this,
 		host : undefined,
 		
 		/**
-		 * @type Number
+		 * @type number
 		 */
 		
 		port : undefined,
 		
 		/**
-		 * @type String
+		 * @type string
 		 */
 		
 		path : undefined,
 		
 		/**
-		 * @type String
+		 * @type string
 		 */
 		
 		query : undefined,
 		
 		/**
-		 * @type String
+		 * @type string
 		 */
 		
 		fragment : undefined,
 		
 		/**
-		 * @type String
-		 * @enum "uri", "absolute", "relative", "same-document"
+		 * @type string
+		 * @values "uri", "absolute", "relative", "same-document"
 		 */
 		
 		reference : undefined,
@@ -307,10 +339,8 @@ var exports = exports || this,
 	};
 	
 	/**
-	 * @class
+	 * SchemeHandler
 	 */
-	
-	SchemeHandler = function () {};
 	
 	/**
 	 * @param {URIComponents} components
@@ -327,10 +357,8 @@ var exports = exports || this,
 	SchemeHandler.prototype.serialize = function (components, options) {};
 	
 	/**
-	 * @namespace
+	 * URI
 	 */
-	
-	URI = {};
 	
 	/**
 	 * @namespace
@@ -339,7 +367,7 @@ var exports = exports || this,
 	URI.SCHEMES = {};
 	
 	/**
-	 * @param {String} uriString
+	 * @param {string} uriString
 	 * @param {Options} [options]
 	 * @returns {URIComponents}
 	 */
@@ -440,7 +468,7 @@ var exports = exports || this,
 	/**
 	 * @private
 	 * @param {URIComponents} components
-	 * @returns {String}
+	 * @returns {string}
 	 */
 	
 	URI._recomposeAuthority = function (components) {
@@ -464,8 +492,8 @@ var exports = exports || this,
 	};
 	
 	/**
-	 * @param {String} input
-	 * @returns {String}
+	 * @param {string} input
+	 * @returns {string}
 	 */
 	
 	URI.removeDotSegments = function (input) {
@@ -493,8 +521,8 @@ var exports = exports || this,
 	
 	/**
 	 * @param {URIComponents} components
-	 * @param {Options} options
-	 * @returns {String}
+	 * @param {Options} [options]
+	 * @returns {string}
 	 */
 	
 	URI.serialize = function (components, options) {
@@ -567,7 +595,7 @@ var exports = exports || this,
 	 * @param {URIComponents} base
 	 * @param {URIComponents} relative
 	 * @param {Options} [options]
-	 * @param {Boolean} [skipNormalization]
+	 * @param {boolean} [skipNormalization]
 	 * @returns {URIComponents}
 	 */
 	
@@ -633,10 +661,10 @@ var exports = exports || this,
 	};
 	
 	/**
-	 * @param {String} baseURI
-	 * @param {String} relativeURI
+	 * @param {string} baseURI
+	 * @param {string} relativeURI
 	 * @param {Options} [options]
-	 * @returns {String}
+	 * @returns {string}
 	 */
 	
 	URI.resolve = function (baseURI, relativeURI, options) {
@@ -644,9 +672,9 @@ var exports = exports || this,
 	};
 	
 	/**
-	 * @param {String|URIComponents} uri
+	 * @param {string|URIComponents} uri
 	 * @param {Options} options
-	 * @returns {String|URIComponents}
+	 * @returns {string|URIComponents}
 	 */
 	
 	URI.normalize = function (uri, options) {
@@ -660,8 +688,8 @@ var exports = exports || this,
 	};
 	
 	/**
-	 * @param {String|URIComponents} uriA
-	 * @param {String|URIComponents} uriB
+	 * @param {string|URIComponents} uriA
+	 * @param {string|URIComponents} uriB
 	 * @param {Options} options
 	 */
 	
@@ -682,8 +710,8 @@ var exports = exports || this,
 	};
 	
 	/**
-	 * @param {String} str
-	 * @returns {String}
+	 * @param {string} str
+	 * @returns {string}
 	 */
 	
 	URI.escapeComponent = function (str) {
@@ -691,8 +719,8 @@ var exports = exports || this,
 	};
 	
 	/**
-	 * @param {String} str
-	 * @returns {String}
+	 * @param {string} str
+	 * @returns {string}
 	 */
 	
 	URI.unescapeComponent = function (str) {
@@ -704,5 +732,19 @@ var exports = exports || this,
 	exports.URIComponents = URIComponents;
 	exports.SchemeHandler = SchemeHandler;
 	exports.URI = URI;
+	
+	//name-safe export API
+	exports["URI"] = {
+		"SCHEMES" : URI.SCHEMES,
+		"parse" : URI.parse,
+		"removeDotSegments" : URI.removeDotSegments,
+		"serialize" : URI.serialize,
+		"resolveComponents" : URI.resolveComponents,
+		"resolve" : URI.resolve,
+		"normalize" : URI.normalize,
+		"equal" : URI.equal,
+		"escapeComponent" : URI.escapeComponent,
+		"unescapeComponent" : URI.unescapeComponent
+	};
 	
 }());
