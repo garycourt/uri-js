@@ -3,13 +3,12 @@
  * 
  * @fileoverview An RFC 3986 compliant, scheme extendable URI parsing/validating/resolving library for JavaScript.
  * @author <a href="mailto:gary.court@gmail.com">Gary Court</a>
- * @version 1.0
+ * @version 1.1
  * @see http://github.com/garycourt/uri-js
+ * @license URI.js v1.1 (c) 2010 Gary Court. License: http://github.com/garycourt/uri-js
  */
 
 /**
- * @license http://github.com/garycourt/uri-js
- * 
  * Copyright 2010 Gary Court. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -38,11 +37,6 @@
  */
 
 /*jslint white: true, sub: true, onevar: true, undef: true, eqeqeq: true, newcap: true, immed: true, indent: 4 */
-
-var exports = exports || this,
-	require = require || function () {
-		return exports;
-	};
 
 (function () {
 	var	
@@ -232,50 +226,22 @@ var exports = exports || this,
 			return o === undefined ? "undefined" : (o === null ? "null" : Object.prototype.toString.call(o).split(" ").pop().split("]").shift().toLowerCase());
 		},
 		
-		/** @constructor */
-		Options = function () {}, 
-		
-		/** @constructor */
-		URIComponents = function () {
+		/**
+		 * @constructor
+		 * @implements URIComponents
+		 */
+		Components = function () {
 			this.errors = [];
 		}, 
-		
-		/** @constructor */
-		SchemeHandler = function () {},
 		
 		/** @namespace */ 
 		URI = {};
 	
 	/**
-	 * Options
+	 * Components
 	 */
 	
-	Options.prototype = {
-		/**
-		 * @type boolean
-		 */
-		
-		tolerant : undefined,
-		
-		/**
-		 * @type String
-		 */
-		
-		scheme : undefined,
-		
-		/**
-		 * @type String
-		 * @values "uri", "absolute", "relative", "same-document", "suffix"
-		 */
-		
-		reference : undefined
-	};
-	
-	/**
-	 * URIComponents
-	 */
-	
-	URIComponents.prototype = {
+	Components.prototype = {
 		/**
 		 * @type String
 		 */
@@ -339,24 +305,6 @@ var exports = exports || this,
 	};
 	
 	/**
-	 * SchemeHandler
-	 */
-	
-	/**
-	 * @param {URIComponents} components
-	 * @param {Options} options
-	 */
-	
-	SchemeHandler.prototype.parse = function (components, options) {};
-	
-	/**
-	 * @param {URIComponents} components
-	 * @param {Options} options
-	 */
-	
-	SchemeHandler.prototype.serialize = function (components, options) {};
-	
-	/**
 	 * URI
 	 */
 	
@@ -374,7 +322,7 @@ var exports = exports || this,
 	
 	URI.parse = function (uriString, options) {
 		var matches, 
-			components = new URIComponents(),
+			components = new Components(),
 			schemeHandler;
 		
 		uriString = uriString ? uriString.toString() : "";
@@ -468,7 +416,7 @@ var exports = exports || this,
 	/**
 	 * @private
 	 * @param {URIComponents} components
-	 * @returns {string}
+	 * @returns {string|undefined}
 	 */
 	
 	URI._recomposeAuthority = function (components) {
@@ -600,7 +548,7 @@ var exports = exports || this,
 	 */
 	
 	URI.resolveComponents = function (base, relative, options, skipNormalization) {
-		var target = new URIComponents();
+		var target = new Components();
 		
 		if (!skipNormalization) {
 			base = URI.parse(URI.serialize(base, options), options);  //normalize base components
@@ -728,9 +676,7 @@ var exports = exports || this,
 	};
 	
 	//export API
-	exports.Options = Options;
-	exports.URIComponents = URIComponents;
-	exports.SchemeHandler = SchemeHandler;
+	exports.Components = Components;
 	exports.URI = URI;
 	
 	//name-safe export API
