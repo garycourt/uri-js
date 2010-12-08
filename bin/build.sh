@@ -3,7 +3,7 @@
 ROOT_DIR="../"
 SRC_DIR=${ROOT_DIR}"src/"
 DIST_DIR=${ROOT_DIR}"dist/"
-ALL_LIST=( ${SRC_DIR}"reqyer.js" ${SRC_DIR}"uri.js" )
+ALL_LIST=( ${SRC_DIR}"uri.js" )
 ALL_FILE=${DIST_DIR}"uri.js"
 EXTERNS_FILE=${SRC_DIR}"externs.js"
 

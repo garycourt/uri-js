@@ -37,7 +37,16 @@
  */
 
 /*jslint white: true, sub: true, onevar: true, undef: true, eqeqeq: true, newcap: true, immed: true, indent: 4 */
+/*global exports:true, require:true */
 
+if (typeof exports === "undefined") {
+	exports = {}; 
+}
+if (typeof require !== "function") {
+	require = function (id) {
+		return exports;
+	};
+}
 (function () {
 	var	
 		/**
