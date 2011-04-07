@@ -3,9 +3,9 @@
  * 
  * @fileoverview An RFC 3986 compliant, scheme extendable URI parsing/validating/resolving library for JavaScript.
  * @author <a href="mailto:gary.court@gmail.com">Gary Court</a>
- * @version 1.1
+ * @version 1.2
  * @see http://github.com/garycourt/uri-js
- * @license URI.js v1.1 (c) 2010 Gary Court. License: http://github.com/garycourt/uri-js
+ * @license URI.js v1.2 (c) 2010 Gary Court. License: http://github.com/garycourt/uri-js
  */
 
 /**
@@ -88,7 +88,7 @@ if (typeof require !== "function") {
 		UNRESERVED$$ = mergeSet(ALPHA$$, DIGIT$$, "[\\-\\.\\_\\~]"),
 		SCHEME$ = subexp(ALPHA$$ + mergeSet(ALPHA$$, DIGIT$$, "[\\+\\-\\.]") + "*"),
 		USERINFO$ = subexp(subexp(PCT_ENCODED$ + "|" + mergeSet(UNRESERVED$$, SUB_DELIMS$$, "[\\:]")) + "*"),
-		DEC_OCTET$ = subexp(DIGIT$$ + "|" + subexp("[1-9]" + DIGIT$$) + "|" + subexp("1" + DIGIT$$ + DIGIT$$) + "|" + subexp("2[0-4]" + DIGIT$$) + "|" + subexp("25[0-5]")),
+		DEC_OCTET$ = subexp(subexp("25[0-5]") + "|" + subexp("2[0-4]" + DIGIT$$) + "|" + subexp("1" + DIGIT$$ + DIGIT$$) + "|" + subexp("[1-9]" + DIGIT$$) + "|" + DIGIT$$),
 		IPV4ADDRESS$ = subexp(DEC_OCTET$ + "." + DEC_OCTET$ + "." + DEC_OCTET$ + "." + DEC_OCTET$),
 		H16$ = subexp(HEXDIG$$ + "{1,4}"),
 		LS32$ = subexp(subexp(H16$ + "\\:" + H16$) + "|" + IPV4ADDRESS$),
