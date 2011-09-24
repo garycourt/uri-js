@@ -73,6 +73,12 @@
 	
 	//RFC 4122
 	URI.SCHEMES["urn:uuid"] = {
+		parse : function (components, options) {
+			if (!options.tolerant && (!components.path || !components.path.match(UUID))) {
+				components.errors.push("UUID is not valid.");
+			}
+		},
+		
 		serialize : function (components, options) {
 			//ensure UUID is valid
 			if (!options.tolerant && (!components.path || !components.path.match(UUID))) {

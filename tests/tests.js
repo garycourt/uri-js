@@ -267,6 +267,9 @@ test("UUID Parsing", function () {
 	strictEqual(components.errors.length, 0, "errors");
 	strictEqual(components.scheme, "urn:uuid", "scheme");
 	strictEqual(components.path, "f81d4fae-7dec-11d0-a765-00a0c91e6bf6", "path");
+	
+	components = URI.parse("urn:uuid:notauuid-7dec-11d0-a765-00a0c91e6bf6");
+	notStrictEqual(components.errors.length, 0, "errors");
 });
 
 test("UUID Serialization", function () {
