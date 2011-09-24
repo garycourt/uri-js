@@ -42,15 +42,6 @@
 				components.scheme = scheme;
 				components.path = matches[2];
 				
-				if (typeof components.query === "string") {
-					components.path += "%3F" + components.query;
-					components.query = undefined;
-				}
-				if (typeof components.fragment === "string") {
-					components.path += "%23" + components.fragment;
-					components.fragment = undefined;
-				}
-				
 				if (schemeHandler.parse) {
 					schemeHandler.parse(components, options);
 				}
