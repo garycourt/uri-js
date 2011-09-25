@@ -410,7 +410,7 @@ if (typeof require !== "function") {
 			}
 			
 			//check if a handler for the scheme exists
-			schemeHandler = URI.SCHEMES[(components.scheme || options.scheme || "").toLowerCase()];
+			schemeHandler = URI.SCHEMES[(options.scheme || components.scheme || "").toLowerCase()];
 			if (schemeHandler && schemeHandler.parse) {
 				//perform extra parsing
 				schemeHandler.parse(components, options);
@@ -489,7 +489,7 @@ if (typeof require !== "function") {
 		options = options || {};
 		
 		//check if a handler for the scheme exists
-		schemeHandler = URI.SCHEMES[components.scheme || options.scheme];
+		schemeHandler = URI.SCHEMES[(options.scheme || components.scheme || "").toLowerCase()];
 		if (schemeHandler && schemeHandler.serialize) {
 			//perform extra serialization
 			schemeHandler.serialize(components, options);

@@ -3,7 +3,7 @@
 ROOT_DIR="../"
 SRC_DIR=${ROOT_DIR}"src/"
 DIST_DIR=${ROOT_DIR}"dist/"
-ALL_LIST=( ${SRC_DIR}"uri.js" ${SRC_DIR}"schemes/urn.js" )
+ALL_LIST=( ${SRC_DIR}"uri.js" ${SRC_DIR}"schemes/http.js" ${SRC_DIR}"schemes/urn.js" )
 ALL_FILE=${DIST_DIR}"uri.min.js"
 EXTERNS_FILE=${SRC_DIR}"externs.js"
 

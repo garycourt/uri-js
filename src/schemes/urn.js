@@ -84,6 +84,9 @@
 			if (!options.tolerant && (!components.path || !components.path.match(UUID))) {
 				//invalid UUIDs can not have this scheme
 				components.scheme = undefined;
+			} else {
+				//normalize UUID
+				components.path = (components.path || "").toLowerCase();
 			}
 			
 			return URI.SCHEMES["urn"].serialize(components, options);

@@ -126,57 +126,57 @@ test("URI Serialization", function () {
 
 test("URI Resolving", function () {
 	//normal examples from RFC 3986
-	var base = "http://a/b/c/d;p?q";
+	var base = "uri://a/b/c/d;p?q";
 	strictEqual(URI.resolve(base, "g:h"), "g:h", "g:h");
 	strictEqual(URI.resolve(base, "g:h"), "g:h", "g:h");
-	strictEqual(URI.resolve(base, "g"), "http://a/b/c/g", "g");
-	strictEqual(URI.resolve(base, "./g"), "http://a/b/c/g", "./g");
-	strictEqual(URI.resolve(base, "g/"), "http://a/b/c/g/", "g/");
-	strictEqual(URI.resolve(base, "/g"), "http://a/g", "/g");
-	strictEqual(URI.resolve(base, "//g"), "http://g", "//g");
-	strictEqual(URI.resolve(base, "?y"), "http://a/b/c/d;p?y", "?y");
-	strictEqual(URI.resolve(base, "g?y"), "http://a/b/c/g?y", "g?y");
-	strictEqual(URI.resolve(base, "#s"), "http://a/b/c/d;p?q#s", "#s");
-	strictEqual(URI.resolve(base, "g#s"), "http://a/b/c/g#s", "g#s");
-	strictEqual(URI.resolve(base, "g?y#s"), "http://a/b/c/g?y#s", "g?y#s");
-	strictEqual(URI.resolve(base, ";x"), "http://a/b/c/;x", ";x");
-	strictEqual(URI.resolve(base, "g;x"), "http://a/b/c/g;x", "g;x");
-	strictEqual(URI.resolve(base, "g;x?y#s"), "http://a/b/c/g;x?y#s", "g;x?y#s");
-	strictEqual(URI.resolve(base, ""), "http://a/b/c/d;p?q", "");
-	strictEqual(URI.resolve(base, "."), "http://a/b/c/", ".");
-	strictEqual(URI.resolve(base, "./"), "http://a/b/c/", "./");
-	strictEqual(URI.resolve(base, ".."), "http://a/b/", "..");
-	strictEqual(URI.resolve(base, "../"), "http://a/b/", "../");
-	strictEqual(URI.resolve(base, "../g"), "http://a/b/g", "../g");
-	strictEqual(URI.resolve(base, "../.."), "http://a/", "../..");
-	strictEqual(URI.resolve(base, "../../"), "http://a/", "../../");
-	strictEqual(URI.resolve(base, "../../g"), "http://a/g", "../../g");
+	strictEqual(URI.resolve(base, "g"), "uri://a/b/c/g", "g");
+	strictEqual(URI.resolve(base, "./g"), "uri://a/b/c/g", "./g");
+	strictEqual(URI.resolve(base, "g/"), "uri://a/b/c/g/", "g/");
+	strictEqual(URI.resolve(base, "/g"), "uri://a/g", "/g");
+	strictEqual(URI.resolve(base, "//g"), "uri://g", "//g");
+	strictEqual(URI.resolve(base, "?y"), "uri://a/b/c/d;p?y", "?y");
+	strictEqual(URI.resolve(base, "g?y"), "uri://a/b/c/g?y", "g?y");
+	strictEqual(URI.resolve(base, "#s"), "uri://a/b/c/d;p?q#s", "#s");
+	strictEqual(URI.resolve(base, "g#s"), "uri://a/b/c/g#s", "g#s");
+	strictEqual(URI.resolve(base, "g?y#s"), "uri://a/b/c/g?y#s", "g?y#s");
+	strictEqual(URI.resolve(base, ";x"), "uri://a/b/c/;x", ";x");
+	strictEqual(URI.resolve(base, "g;x"), "uri://a/b/c/g;x", "g;x");
+	strictEqual(URI.resolve(base, "g;x?y#s"), "uri://a/b/c/g;x?y#s", "g;x?y#s");
+	strictEqual(URI.resolve(base, ""), "uri://a/b/c/d;p?q", "");
+	strictEqual(URI.resolve(base, "."), "uri://a/b/c/", ".");
+	strictEqual(URI.resolve(base, "./"), "uri://a/b/c/", "./");
+	strictEqual(URI.resolve(base, ".."), "uri://a/b/", "..");
+	strictEqual(URI.resolve(base, "../"), "uri://a/b/", "../");
+	strictEqual(URI.resolve(base, "../g"), "uri://a/b/g", "../g");
+	strictEqual(URI.resolve(base, "../.."), "uri://a/", "../..");
+	strictEqual(URI.resolve(base, "../../"), "uri://a/", "../../");
+	strictEqual(URI.resolve(base, "../../g"), "uri://a/g", "../../g");
 	
 	//abnormal examples from RFC 3986
-	strictEqual(URI.resolve(base, "../../../g"), "http://a/g", "../../../g");
-	strictEqual(URI.resolve(base, "../../../../g"), "http://a/g", "../../../../g");
+	strictEqual(URI.resolve(base, "../../../g"), "uri://a/g", "../../../g");
+	strictEqual(URI.resolve(base, "../../../../g"), "uri://a/g", "../../../../g");
 	
-	strictEqual(URI.resolve(base, "/./g"), "http://a/g", "/./g");
-	strictEqual(URI.resolve(base, "/../g"), "http://a/g", "/../g");
-	strictEqual(URI.resolve(base, "g."), "http://a/b/c/g.", "g.");
-	strictEqual(URI.resolve(base, ".g"), "http://a/b/c/.g", ".g");
-	strictEqual(URI.resolve(base, "g.."), "http://a/b/c/g..", "g..");
-	strictEqual(URI.resolve(base, "..g"), "http://a/b/c/..g", "..g");
+	strictEqual(URI.resolve(base, "/./g"), "uri://a/g", "/./g");
+	strictEqual(URI.resolve(base, "/../g"), "uri://a/g", "/../g");
+	strictEqual(URI.resolve(base, "g."), "uri://a/b/c/g.", "g.");
+	strictEqual(URI.resolve(base, ".g"), "uri://a/b/c/.g", ".g");
+	strictEqual(URI.resolve(base, "g.."), "uri://a/b/c/g..", "g..");
+	strictEqual(URI.resolve(base, "..g"), "uri://a/b/c/..g", "..g");
       
-	strictEqual(URI.resolve(base, "./../g"), "http://a/b/g", "./../g");
-	strictEqual(URI.resolve(base, "./g/."), "http://a/b/c/g/", "./g/.");
-	strictEqual(URI.resolve(base, "g/./h"), "http://a/b/c/g/h", "g/./h");
-	strictEqual(URI.resolve(base, "g/../h"), "http://a/b/c/h", "g/../h");
-	strictEqual(URI.resolve(base, "g;x=1/./y"), "http://a/b/c/g;x=1/y", "g;x=1/./y");
-	strictEqual(URI.resolve(base, "g;x=1/../y"), "http://a/b/c/y", "g;x=1/../y");
+	strictEqual(URI.resolve(base, "./../g"), "uri://a/b/g", "./../g");
+	strictEqual(URI.resolve(base, "./g/."), "uri://a/b/c/g/", "./g/.");
+	strictEqual(URI.resolve(base, "g/./h"), "uri://a/b/c/g/h", "g/./h");
+	strictEqual(URI.resolve(base, "g/../h"), "uri://a/b/c/h", "g/../h");
+	strictEqual(URI.resolve(base, "g;x=1/./y"), "uri://a/b/c/g;x=1/y", "g;x=1/./y");
+	strictEqual(URI.resolve(base, "g;x=1/../y"), "uri://a/b/c/y", "g;x=1/../y");
       
-	strictEqual(URI.resolve(base, "g?y/./x"), "http://a/b/c/g?y/./x", "g?y/./x");
-	strictEqual(URI.resolve(base, "g?y/../x"), "http://a/b/c/g?y/../x", "g?y/../x");
-	strictEqual(URI.resolve(base, "g#s/./x"), "http://a/b/c/g#s/./x", "g#s/./x");
-	strictEqual(URI.resolve(base, "g#s/../x"), "http://a/b/c/g#s/../x", "g#s/../x");
+	strictEqual(URI.resolve(base, "g?y/./x"), "uri://a/b/c/g?y/./x", "g?y/./x");
+	strictEqual(URI.resolve(base, "g?y/../x"), "uri://a/b/c/g?y/../x", "g?y/../x");
+	strictEqual(URI.resolve(base, "g#s/./x"), "uri://a/b/c/g#s/./x", "g#s/./x");
+	strictEqual(URI.resolve(base, "g#s/../x"), "uri://a/b/c/g#s/../x", "g#s/../x");
       
-	strictEqual(URI.resolve(base, "http:g"), "http:g", "http:g");
-	strictEqual(URI.resolve(base, "http:g", {tolerant:true}), "http://a/b/c/g", "http:g");
+	strictEqual(URI.resolve(base, "uri:g"), "uri:g", "uri:g");
+	strictEqual(URI.resolve(base, "uri:g", {tolerant:true}), "uri://a/b/c/g", "uri:g");
       
 });
 
@@ -215,6 +215,20 @@ test("Unescape Component", function () {
 	output += "%C3%80%E3%82%A2";
 	
 	strictEqual(URI.unescapeComponent(output), input);
+});
+
+//
+// HTTP
+//
+
+module("HTTP");
+
+test("HTTP Equals", function () {
+	//test from RFC 2616
+	strictEqual(URI.equal("http://abc.com:80/~smith/home.html", "http://abc.com/~smith/home.html"), true);
+	strictEqual(URI.equal("http://ABC.com/%7Esmith/home.html", "http://abc.com/~smith/home.html"), true);
+	strictEqual(URI.equal("http://ABC.com:/%7esmith/home.html", "http://abc.com/~smith/home.html"), true);
+	strictEqual(URI.equal("HTTP://ABC.COM", "http://abc.com/"), true);
 });
 
 //
@@ -259,8 +273,6 @@ test("URN Equals", function () {
 // URN UUID
 //
 
-module("URN:UUID");
-
 test("UUID Parsing", function () {
 	//example from RFC 4122
 	var components = URI.parse("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6");
@@ -285,4 +297,8 @@ test("UUID Serialization", function () {
 		path : "notauuid-7dec-11d0-a765-00a0c91e6bf6"
 	};
 	strictEqual(URI.serialize(components), "notauuid-7dec-11d0-a765-00a0c91e6bf6");
+});
+
+test("UUID Equals", function () {
+	strictEqual(URI.equal("URN:UUID:F81D4FAE-7DEC-11D0-A765-00A0C91E6BF6", "urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6"), true);
 });
