@@ -5,7 +5,7 @@
 	URI.SCHEMES["http"] = {
 		serialize : function (components, options) {
 			//normalize the default port
-			if (components.port === 80) {
+			if (components.port === 80 || components.port === "") {
 				components.port = undefined;
 			}
 			//normalize the empty path

@@ -16,7 +16,7 @@ test("URI Parsing", function () {
 	components = URI.parse("uri:");
 	strictEqual(components.errors.length, 0, "scheme errors");
 	strictEqual(components.scheme, "uri", "scheme");
-	strictEqual(components.authority, undefined, "authority");
+	//strictEqual(components.authority, undefined, "authority");
 	strictEqual(components.userinfo, undefined, "userinfo");
 	strictEqual(components.host, undefined, "host");
 	strictEqual(components.port, undefined, "port");
@@ -28,7 +28,7 @@ test("URI Parsing", function () {
 	components = URI.parse("//@");
 	strictEqual(components.errors.length, 0, "userinfo errors");
 	strictEqual(components.scheme, undefined, "scheme");
-	strictEqual(components.authority, "@", "authority");
+	//strictEqual(components.authority, "@", "authority");
 	strictEqual(components.userinfo, "", "userinfo");
 	strictEqual(components.host, "", "host");
 	strictEqual(components.port, undefined, "port");
@@ -40,7 +40,7 @@ test("URI Parsing", function () {
 	components = URI.parse("//");
 	strictEqual(components.errors.length, 0, "host errors");
 	strictEqual(components.scheme, undefined, "scheme");
-	strictEqual(components.authority, "", "authority");
+	//strictEqual(components.authority, "", "authority");
 	strictEqual(components.userinfo, undefined, "userinfo");
 	strictEqual(components.host, "", "host");
 	strictEqual(components.port, undefined, "port");
@@ -52,7 +52,7 @@ test("URI Parsing", function () {
 	components = URI.parse("//:");
 	strictEqual(components.errors.length, 0, "port errors");
 	strictEqual(components.scheme, undefined, "scheme");
-	strictEqual(components.authority, ":", "authority");
+	//strictEqual(components.authority, ":", "authority");
 	strictEqual(components.userinfo, undefined, "userinfo");
 	strictEqual(components.host, "", "host");
 	strictEqual(components.port, "", "port");
@@ -64,7 +64,7 @@ test("URI Parsing", function () {
 	components = URI.parse("");
 	strictEqual(components.errors.length, 0, "path errors");
 	strictEqual(components.scheme, undefined, "scheme");
-	strictEqual(components.authority, undefined, "authority");
+	//strictEqual(components.authority, undefined, "authority");
 	strictEqual(components.userinfo, undefined, "userinfo");
 	strictEqual(components.host, undefined, "host");
 	strictEqual(components.port, undefined, "port");
@@ -76,7 +76,7 @@ test("URI Parsing", function () {
 	components = URI.parse("?");
 	strictEqual(components.errors.length, 0, "query errors");
 	strictEqual(components.scheme, undefined, "scheme");
-	strictEqual(components.authority, undefined, "authority");
+	//strictEqual(components.authority, undefined, "authority");
 	strictEqual(components.userinfo, undefined, "userinfo");
 	strictEqual(components.host, undefined, "host");
 	strictEqual(components.port, undefined, "port");
@@ -88,7 +88,7 @@ test("URI Parsing", function () {
 	components = URI.parse("#");
 	strictEqual(components.errors.length, 0, "fragment errors");
 	strictEqual(components.scheme, undefined, "scheme");
-	strictEqual(components.authority, undefined, "authority");
+	//strictEqual(components.authority, undefined, "authority");
 	strictEqual(components.userinfo, undefined, "userinfo");
 	strictEqual(components.host, undefined, "host");
 	strictEqual(components.port, undefined, "port");
@@ -100,7 +100,7 @@ test("URI Parsing", function () {
 	components = URI.parse("uri://user:pass@example.com:123/one/two.three?q1=a1&q2=a2#body");
 	strictEqual(components.errors.length, 0, "all errors");
 	strictEqual(components.scheme, "uri", "scheme");
-	strictEqual(components.authority, "user:pass@example.com:123", "authority");
+	//strictEqual(components.authority, "user:pass@example.com:123", "authority");
 	strictEqual(components.userinfo, "user:pass", "userinfo");
 	strictEqual(components.host, "example.com", "host");
 	strictEqual(components.port, 123, "port");
@@ -111,6 +111,17 @@ test("URI Parsing", function () {
 
 test("URI Serialization", function () {
 	var components = {
+		scheme : undefined,
+		userinfo : undefined,
+		host : undefined,
+		port : undefined,
+		path : undefined,
+		query : undefined,
+		fragment : undefined
+	};
+	strictEqual(URI.serialize(components), "", "Undefined Components");
+	
+	components = {
 		scheme : "",
 		userinfo : "",
 		host : "",
@@ -119,9 +130,18 @@ test("URI Serialization", function () {
 		query : "",
 		fragment : ""
 	};
-	strictEqual(URI.serialize(components), "//@:0", "Empty Components");
+	strictEqual(URI.serialize(components), "//@:0?#", "Empty Components");
 	
-	//TODO: NEED MOAR TESTS!!
+	components = {
+		scheme : "uri",
+		userinfo : "foo:bar",
+		host : "example.com",
+		port : 1,
+		path : "path",
+		query : "query",
+		fragment : "fragment"
+	};
+	strictEqual(URI.serialize(components), "uri://foo:bar@example.com:1/path?query#fragment", "All Components");
 });
 
 test("URI Resolving", function () {
@@ -229,6 +249,8 @@ test("HTTP Equals", function () {
 	strictEqual(URI.equal("http://ABC.com/%7Esmith/home.html", "http://abc.com/~smith/home.html"), true);
 	strictEqual(URI.equal("http://ABC.com:/%7esmith/home.html", "http://abc.com/~smith/home.html"), true);
 	strictEqual(URI.equal("HTTP://ABC.COM", "http://abc.com/"), true);
+	//test from RFC 3986
+	strictEqual(URI.equal("http://example.com:/", "http://example.com:80/"), true);
 });
 
 //
@@ -242,7 +264,7 @@ test("URN Parsing", function () {
 	var components = URI.parse("urn:foo:a123,456");
 	strictEqual(components.errors.length, 0, "errors");
 	strictEqual(components.scheme, "urn:foo", "scheme");
-	strictEqual(components.authority, undefined, "authority");
+	//strictEqual(components.authority, undefined, "authority");
 	strictEqual(components.userinfo, undefined, "userinfo");
 	strictEqual(components.host, undefined, "host");
 	strictEqual(components.port, undefined, "port");

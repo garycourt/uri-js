@@ -3,13 +3,13 @@
  * 
  * @fileoverview An RFC 3986 compliant, scheme extendable URI parsing/validating/resolving library for JavaScript.
  * @author <a href="mailto:gary.court@gmail.com">Gary Court</a>
- * @version 1.3
+ * @version 1.4
  * @see http://github.com/garycourt/uri-js
- * @license URI.js v1.3 (c) 2010 Gary Court. License: http://github.com/garycourt/uri-js
+ * @license URI.js v1.4 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js
  */
 
 /**
- * Copyright 2010 Gary Court. All rights reserved.
+ * Copyright 2011 Gary Court. All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without modification, are
  * permitted provided that the following conditions are met:
@@ -118,13 +118,13 @@ if (typeof require !== "function") {
 		URI_REFERENCE$ = subexp(URI$ + "|" + RELATIVE_REF$),
 		ABSOLUTE_URI$ = subexp(SCHEME$ + "\\:" + HIER_PART$ + subexp("\\?" + QUERY$) + "?"),
 		
-		URI_REF = new RegExp("^" + subexp("(" + URI$ + ")|(" + RELATIVE_REF$ + ")") + "$"),
-		GENERIC_REF  = new RegExp("^(" + SCHEME$ + ")\\:" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?" + subexp("\\#(" + FRAGMENT$ + ")") + "?$"),
-		RELATIVE_REF = new RegExp("^(){0}" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_NOSCHEME$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?" + subexp("\\#(" + FRAGMENT$ + ")") + "?$"),
-		ABSOLUTE_REF = new RegExp("^(" + SCHEME$ + ")\\:" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?$"),
-		SAMEDOC_REF = new RegExp("^" + subexp("\\#(" + FRAGMENT$ + ")") + "?$"),
-		AUTHORITY = new RegExp("^" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?$"),
+		GENERIC_REF$ = "^(" + SCHEME$ + ")\\:" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?" + subexp("\\#(" + FRAGMENT$ + ")") + "?$",
+		RELATIVE_REF$ = "^(){0}" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_NOSCHEME$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?" + subexp("\\#(" + FRAGMENT$ + ")") + "?$",
+		ABSOLUTE_REF$ = "^(" + SCHEME$ + ")\\:" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?$",
+		SAMEDOC_REF$ = "^" + subexp("\\#(" + FRAGMENT$ + ")") + "?$",
+		AUTHORITY$ = "^" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?$",
 		
+		URI_REF = new RegExp("(" + GENERIC_REF$ + ")|(" + RELATIVE_REF$ + ")"),
 		NOT_SCHEME = new RegExp(mergeSet("[^]", ALPHA$$, DIGIT$$, "[\\+\\-\\.]"), "g"),
 		NOT_USERINFO = new RegExp(mergeSet("[^\\%\\:]", UNRESERVED$$, SUB_DELIMS$$), "g"),
 		NOT_HOST = new RegExp(mergeSet("[^\\%]", UNRESERVED$$, SUB_DELIMS$$), "g"),
@@ -261,12 +261,6 @@ if (typeof require !== "function") {
 		 * @type String
 		 */
 		
-		authority : undefined,
-		
-		/**
-		 * @type String
-		 */
-		
 		userinfo : undefined,
 		
 		/**
@@ -346,10 +340,10 @@ if (typeof require !== "function") {
 		if (matches) {
 			if (matches[1]) {
 				//generic URI
-				matches = uriString.match(GENERIC_REF);
+				matches = matches.slice(1, 10);
 			} else {
 				//relative URI
-				matches = uriString.match(RELATIVE_REF);
+				matches = matches.slice(10, 19);
 			}
 		} 
 		
@@ -364,7 +358,7 @@ if (typeof require !== "function") {
 			if (NO_MATCH_IS_UNDEFINED) {
 				//store each component
 				components.scheme = matches[1];
-				components.authority = matches[2];
+				//components.authority = matches[2];
 				components.userinfo = matches[3];
 				components.host = matches[4];
 				components.port = parseInt(matches[5], 10);
@@ -379,7 +373,7 @@ if (typeof require !== "function") {
 			} else {  //IE FIX for improper RegExp matching
 				//store each component
 				components.scheme = matches[1] || undefined;
-				components.authority = (uriString.indexOf("//") !== -1 ? matches[2] : undefined);
+				//components.authority = (uriString.indexOf("//") !== -1 ? matches[2] : undefined);
 				components.userinfo = (uriString.indexOf("@") !== -1 ? matches[3] : undefined);
 				components.host = (uriString.indexOf("//") !== -1 ? matches[4] : undefined);
 				components.port = parseInt(matches[5], 10);
@@ -394,11 +388,11 @@ if (typeof require !== "function") {
 			}
 			
 			//determine reference type
-			if (!components.scheme && !components.authority && !components.path && !components.query) {
+			if (components.scheme === undefined && components.userinfo === undefined && components.host === undefined && components.port === undefined && components.path === undefined && components.query === undefined) {
 				components.reference = "same-document";
-			} else if (!components.scheme) {
+			} else if (components.scheme === undefined) {
 				components.reference = "relative";
-			} else if (!components.fragment) {
+			} else if (components.fragment === undefined) {
 				components.reference = "absolute";
 			} else {
 				components.reference = "uri";
@@ -431,18 +425,16 @@ if (typeof require !== "function") {
 	URI._recomposeAuthority = function (components) {
 		var uriTokens = [];
 		
-		if (components.userinfo !== undefined || components.host !== undefined || typeof components.port === "number") {
-			if (components.userinfo !== undefined) {
-				uriTokens.push(components.userinfo.toString().replace(NOT_USERINFO, pctEncChar));
-				uriTokens.push("@");
-			}
-			if (components.host !== undefined) {
-				uriTokens.push(components.host.toString().toLowerCase().replace(NOT_HOST, pctEncChar));
-			}
-			if (typeof components.port === "number") {
-				uriTokens.push(":");
-				uriTokens.push(components.port.toString(10));
-			}
+		if (components.userinfo !== undefined) {
+			uriTokens.push(components.userinfo.toString().replace(NOT_USERINFO, pctEncChar));
+			uriTokens.push("@");
+		}
+		if (components.host !== undefined) {
+			uriTokens.push(components.host.toString().toLowerCase().replace(NOT_HOST, pctEncChar));
+		}
+		if (typeof components.port === "number") {
+			uriTokens.push(":");
+			uriTokens.push(components.port.toString(10));
 		}
 		
 		return uriTokens.length ? uriTokens.join("") : undefined;
@@ -484,7 +476,8 @@ if (typeof require !== "function") {
 	
 	URI.serialize = function (components, options) {
 		var uriTokens = [], 
-			schemeHandler, 
+			schemeHandler,
+			authority,
 			s;
 		options = options || {};
 		
@@ -500,20 +493,20 @@ if (typeof require !== "function") {
 			uriTokens.push(":");
 		}
 		
-		components.authority = URI._recomposeAuthority(components);
-		if (components.authority !== undefined) {
+		authority = URI._recomposeAuthority(components);
+		if (authority !== undefined) {
 			if (options.reference !== "suffix") {
 				uriTokens.push("//");
 			}
 			
-			uriTokens.push(components.authority);
+			uriTokens.push(authority);
 			
 			if (components.path && components.path.charAt(0) !== "/") {
 				uriTokens.push("/");
 			}
 		}
 		
-		if (components.path) {
+		if (components.path !== undefined) {
 			s = URI.removeDotSegments(components.path.toString().replace(/%2E/ig, "."));
 			
 			if (components.scheme) {
@@ -522,18 +515,18 @@ if (typeof require !== "function") {
 				s = s.replace(NOT_PATH_NOSCHEME, pctEncChar);
 			}
 			
-			if (components.authority === undefined) {
+			if (authority === undefined) {
 				s = s.replace(/^\/\//, "/%2F");  //don't allow the path to start with "//"
 			}
 			uriTokens.push(s);
 		}
 		
-		if (components.query) {
+		if (components.query !== undefined) {
 			uriTokens.push("?");
 			uriTokens.push(components.query.toString().replace(NOT_QUERY, pctEncChar));
 		}
 		
-		if (components.fragment) {
+		if (components.fragment !== undefined) {
 			uriTokens.push("#");
 			uriTokens.push(components.fragment.toString().replace(NOT_FRAGMENT, pctEncChar));
 		}
@@ -567,15 +560,15 @@ if (typeof require !== "function") {
 		
 		if (!options.tolerant && relative.scheme) {
 			target.scheme = relative.scheme;
-			target.authority = relative.authority;
+			//target.authority = relative.authority;
 			target.userinfo = relative.userinfo;
 			target.host = relative.host;
 			target.port = relative.port;
 			target.path = URI.removeDotSegments(relative.path);
 			target.query = relative.query;
 		} else {
-			if (relative.authority !== undefined) {
-				target.authority = relative.authority;
+			if (relative.userinfo !== undefined || relative.host !== undefined || relative.port !== undefined) {
+				//target.authority = relative.authority;
 				target.userinfo = relative.userinfo;
 				target.host = relative.host;
 				target.port = relative.port;
@@ -593,7 +586,7 @@ if (typeof require !== "function") {
 					if (relative.path.charAt(0) === "/") {
 						target.path = URI.removeDotSegments(relative.path);
 					} else {
-						if (base.authority !== undefined && !base.path) {
+						if ((base.userinfo !== undefined || base.host !== undefined || base.port !== undefined) && !base.path) {
 							target.path = "/" + relative.path;
 						} else if (!base.path) {
 							target.path = relative.path;
@@ -604,7 +597,7 @@ if (typeof require !== "function") {
 					}
 					target.query = relative.query;
 				}
-				target.authority = base.authority;
+				//target.authority = base.authority;
 				target.userinfo = base.userinfo;
 				target.host = base.host;
 				target.port = base.port;
