@@ -12,7 +12,9 @@ To load in a CommonJS (Node.js) environment, simply use:
 
 	var URI = require("./uri-js");
 
-## Parsing & Validating
+## API
+
+### Parsing & Validating
 
 	var components = URI.parse("uri://user:pass@example.com:123/one/two.three?q1=a1&q2=a2#body");
 	//returns:
@@ -27,23 +29,23 @@ To load in a CommonJS (Node.js) environment, simply use:
 	//  fragment : "body"
 	//}
 
-## Serializing
+### Serializing
 
 	URI.serialize({scheme : "http", host : "example.com", fragment : "footer"}) === "http://example.com/#footer"
 
-## Resolving
+### Resolving
 
 	URI.resolve("uri://a/b/c/d?q", "../../g") === "uri://a/g"
 
-## Normalizing
+### Normalizing
 
 	URI.normalize("HTTP://ABC.com/%7Esmith/home.html") === "http://abc.com/~smith/home.html"
 
-## Comparison
+### Comparison
 
 	URI.equal("example://a/b/c/%7Bfoo%7D", "eXAMPLE://a/./b/../b/%63/%7bfoo%7d") === true
 
-## Options
+### Options
 
 All of the above functions can accept an additional options argument that is an object that can contain one or more of the following properties:
 
