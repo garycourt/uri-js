@@ -136,12 +136,12 @@ URI = (function () {
 		UNRESERVED = new RegExp(UNRESERVED$$, "g"),
 		OTHER_CHARS = new RegExp(mergeSet("[^\\%]", UNRESERVED$$, RESERVED$$), "g"),
 		PCT_ENCODEDS = new RegExp(PCT_ENCODED$ + "+", "g"),
-		URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?([^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?/i,
+		URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?([^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#((?:.|\n)*))?/i,
 		RDS1 = /^\.\.?\//,
 		RDS2 = /^\/\.(\/|$)/,
 		RDS3 = /^\/\.\.(\/|$)/,
 		RDS4 = /^\.\.?$/,
-		RDS5 = /^\/?.*?(?=\/|$)/,
+		RDS5 = /^\/?(?:.|\n)*?(?=\/|$)/,
 		NO_MATCH_IS_UNDEFINED = ("").match(/(){0}/)[1] === undefined,
 		
 		/**
@@ -383,7 +383,7 @@ URI = (function () {
 				
 				//fix port number
 				if (isNaN(components.port)) {
-					components.port = (uriString.match(/\/\/.*\:(?:\/|\?|\#|$)/) ? matches[4] : undefined);
+					components.port = (uriString.match(/\/\/(?:.|\n)*\:(?:\/|\?|\#|$)/) ? matches[4] : undefined);
 				}
 			}
 			

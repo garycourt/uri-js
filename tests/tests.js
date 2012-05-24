@@ -197,7 +197,10 @@ test("URI Resolving", function () {
       
 	strictEqual(URI.resolve(base, "uri:g"), "uri:g", "uri:g");
 	strictEqual(URI.resolve(base, "uri:g", {tolerant:true}), "uri://a/b/c/g", "uri:g");
-      
+    
+	//examples by PAEz
+	strictEqual(URI.resolve("//www.g.com/","/adf\ngf"), "//www.g.com/adf%Agf", "/adf\\ngf");
+	strictEqual(URI.resolve("//www.g.com/error\n/bleh/bleh",".."), "//www.g.com/error%A/", "//www.g.com/error\\n/bleh/bleh");
 });
 
 test("URI Equals", function () {
