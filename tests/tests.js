@@ -199,8 +199,8 @@ test("URI Resolving", function () {
 	strictEqual(URI.resolve(base, "uri:g", {tolerant:true}), "uri://a/b/c/g", "uri:g");
     
 	//examples by PAEz
-	strictEqual(URI.resolve("//www.g.com/","/adf\ngf"), "//www.g.com/adf%Agf", "/adf\\ngf");
-	strictEqual(URI.resolve("//www.g.com/error\n/bleh/bleh",".."), "//www.g.com/error%A/", "//www.g.com/error\\n/bleh/bleh");
+	strictEqual(URI.resolve("//www.g.com/","/adf\ngf"), "//www.g.com/adf%0Agf", "/adf\\ngf");
+	strictEqual(URI.resolve("//www.g.com/error\n/bleh/bleh",".."), "//www.g.com/error%0A/", "//www.g.com/error\\n/bleh/bleh");
 });
 
 test("URI Equals", function () {
@@ -209,35 +209,27 @@ test("URI Equals", function () {
 });
 
 test("Escape Component", function () {
-	var input = "", output = "";
-	for (var d = 32; d < 128; ++d) {
-		input += String.fromCharCode(d);
-		if (String.fromCharCode(d).match(/[0-9A-Za-z\-\.\_\~\!\$\&\'\(\)\*\+\,\;\=]/)) {
-			output += String.fromCharCode(d);
+	var chr;
+	for (var d = 0; d <= 128; ++d) {
+		chr = String.fromCharCode(d);
+		if (!chr.match(/[\$\&\+\,\;\=]/)) {
+			strictEqual(URI.escapeComponent(chr), encodeURIComponent(chr));
 		} else {
-			output += "%" + d.toString(16).toUpperCase();
+			strictEqual(URI.escapeComponent(chr), chr);
 		}
 	}
-	input += "\u00c0\u30a2";
-	output += "%C3%80%E3%82%A2";
-	
-	strictEqual(URI.escapeComponent(input), output);
+	strictEqual(URI.escapeComponent("\u00c0"), encodeURIComponent("\u00c0"));
+	strictEqual(URI.escapeComponent("\u30a2"), encodeURIComponent("\u30a2"));
 });
 
 test("Unescape Component", function () {
-	var input = "", output = "";
-	for (var d = 32; d < 128; ++d) {
-		input += String.fromCharCode(d);
-		if (String.fromCharCode(d).match(/[0-9A-Za-z\-\.\_\~\!\$\&\'\(\)\*\+\,\;\=]/)) {
-			output += String.fromCharCode(d);
-		} else {
-			output += "%" + d.toString(16).toUpperCase();
-		}
+	var chr;
+	for (var d = 0; d <= 128; ++d) {
+		chr = String.fromCharCode(d);
+		strictEqual(URI.unescapeComponent(encodeURIComponent(chr)), chr);
 	}
-	input += "\u00c0\u30a2";
-	output += "%C3%80%E3%82%A2";
-	
-	strictEqual(URI.unescapeComponent(output), input);
+	strictEqual(URI.unescapeComponent(encodeURIComponent("\u00c0")), "\u00c0");
+	strictEqual(URI.unescapeComponent(encodeURIComponent("\u30a2")), "\u30a2");
 });
 
 //

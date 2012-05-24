@@ -1,6 +1,6 @@
 {
 	"name" : "uri-js",
-	"version" : "1.4.1",
+	"version" : "1.4.2",
 	"description" : "An RFC 3986 compliant, scheme extendable URI parsing/validating/resolving library for JavaScript.",
 	"homepage" : "http://github.com/garycourt/uri-js",
 	"author" : "Gary Court <gary.court@gmail.com>",

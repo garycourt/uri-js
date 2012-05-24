@@ -3,9 +3,9 @@
  * 
  * @fileoverview An RFC 3986 compliant, scheme extendable URI parsing/validating/resolving library for JavaScript.
  * @author <a href="mailto:gary.court@gmail.com">Gary Court</a>
- * @version 1.4
+ * @version 1.4.2
  * @see http://github.com/garycourt/uri-js
- * @license URI.js v1.4 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js
+ * @license URI.js v1.4.2 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js
  */
 
 /**
@@ -36,7 +36,7 @@
  * or implied, of Gary Court.
  */
 
-/*jslint white: true, sub: true, onevar: true, undef: true, eqeqeq: true, newcap: true, immed: true, indent: 4 */
+/*jslint white: true, sub: true, undef: true, newcap: true, plusplus: true, bitwise: true, regexp: true, nomen: true, indent: 4 */
 /*global exports:true, require:true, URI:true */
 
 if (typeof exports === "undefined") {
@@ -44,17 +44,20 @@ if (typeof exports === "undefined") {
 }
 if (typeof require !== "function") {
 	require = function (id) {
+		"use strict";
 		return exports;
 	};
 }
 URI = (function () {
+	"use strict";
+	
 	var	
 		/**
 		 * @param {...string} sets
 		 * @return {string}
 		 */
 		mergeSet = function (sets) {
-			var set = arguments[0],
+			var set = sets,
 				x = 1,
 				nextSet = arguments[x];
 			
@@ -114,15 +117,15 @@ URI = (function () {
 		HIER_PART$ = subexp(subexp("\\/\\/" + AUTHORITY$ + PATH_ABEMPTY$) + "|" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$),
 		URI$ = subexp(SCHEME$ + "\\:" + HIER_PART$ + subexp("\\?" + QUERY$) + "?" + subexp("\\#" + FRAGMENT$) + "?"),
 		RELATIVE_PART$ = subexp(subexp("\\/\\/" + AUTHORITY$ + PATH_ABEMPTY$) + "|" + PATH_ABSOLUTE$ + "|" + PATH_NOSCHEME$ + "|" + PATH_EMPTY$),
-		RELATIVE_REF$ = subexp(RELATIVE_PART$ + subexp("\\?" + QUERY$) + "?" + subexp("\\#" + FRAGMENT$) + "?"),
-		URI_REFERENCE$ = subexp(URI$ + "|" + RELATIVE_REF$),
+		RELATIVE$ = subexp(RELATIVE_PART$ + subexp("\\?" + QUERY$) + "?" + subexp("\\#" + FRAGMENT$) + "?"),
+		URI_REFERENCE$ = subexp(URI$ + "|" + RELATIVE$),
 		ABSOLUTE_URI$ = subexp(SCHEME$ + "\\:" + HIER_PART$ + subexp("\\?" + QUERY$) + "?"),
 		
 		GENERIC_REF$ = "^(" + SCHEME$ + ")\\:" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?" + subexp("\\#(" + FRAGMENT$ + ")") + "?$",
 		RELATIVE_REF$ = "^(){0}" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_NOSCHEME$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?" + subexp("\\#(" + FRAGMENT$ + ")") + "?$",
 		ABSOLUTE_REF$ = "^(" + SCHEME$ + ")\\:" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?$",
 		SAMEDOC_REF$ = "^" + subexp("\\#(" + FRAGMENT$ + ")") + "?$",
-		AUTHORITY$ = "^" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?$",
+		AUTHORITY_REF$ = "^" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?$",
 		
 		URI_REF = new RegExp("(" + GENERIC_REF$ + ")|(" + RELATIVE_REF$ + ")"),
 		NOT_SCHEME = new RegExp(mergeSet("[^]", ALPHA$$, DIGIT$$, "[\\+\\-\\.]"), "g"),
@@ -149,17 +152,22 @@ URI = (function () {
 		 * @return {string}
 		 */
 		pctEncChar = function (chr) {
-			var c = chr.charCodeAt(0);
+			var c = chr.charCodeAt(0), e;
  
-			if (c < 128) {
-				return "%" + c.toString(16).toUpperCase();
+			if (c < 16) {
+				e = "%0" + c.toString(16).toUpperCase();
 			}
-			else if ((c > 127) && (c < 2048)) {
-				return "%" + ((c >> 6) | 192).toString(16).toUpperCase() + "%" + ((c & 63) | 128).toString(16).toUpperCase();
+			else if (c < 128) {
+				e = "%" + c.toString(16).toUpperCase();
+			}
+			else if (c < 2048) {
+				e = "%" + ((c >> 6) | 192).toString(16).toUpperCase() + "%" + ((c & 63) | 128).toString(16).toUpperCase();
 			}
 			else {
-				return "%" + ((c >> 12) | 224).toString(16).toUpperCase() + "%" + (((c >> 6) & 63) | 128).toString(16).toUpperCase() + "%" + ((c & 63) | 128).toString(16).toUpperCase();
+				e = "%" + ((c >> 12) | 224).toString(16).toUpperCase() + "%" + (((c >> 6) & 63) | 128).toString(16).toUpperCase() + "%" + ((c & 63) | 128).toString(16).toUpperCase();
 			}
+			
+			return e;
 		},
 		
 		/**
@@ -629,9 +637,9 @@ URI = (function () {
 	
 	URI.normalize = function (uri, options) {
 		if (typeof uri === "string") {
-			return URI.serialize(URI.parse(uri, options), options);
+			uri = URI.serialize(URI.parse(uri, options), options);
 		} else if (typeOf(uri) === "object") {
-			return URI.parse(URI.serialize(uri, options), options);
+			uri = URI.parse(URI.serialize(uri, options), options);
 		}
 		
 		return uri;
