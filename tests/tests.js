@@ -203,14 +203,22 @@ test("URI Resolving", function () {
 	strictEqual(URI.resolve("//www.g.com/error\n/bleh/bleh",".."), "//www.g.com/error%0A/", "//www.g.com/error\\n/bleh/bleh");
 });
 
+test("URI Normalizing", function () {
+	//test from RFC 3987
+	strictEqual(URI.normalize("uri://www.example.org/red%09ros\xE9#red"), "uri://www.example.org/red%09ros%C3%A9#red");
+});
+
 test("URI Equals", function () {
 	//test from RFC 3986
 	strictEqual(URI.equal("example://a/b/c/%7Bfoo%7D", "eXAMPLE://a/./b/../b/%63/%7bfoo%7d"), true);
+	
+	//test from RFC 3987
+	strictEqual(URI.equal("http://example.org/~user", "http://example.org/%7euser"), true);
 });
 
 test("Escape Component", function () {
 	var chr;
-	for (var d = 0; d <= 128; ++d) {
+	for (var d = 0; d <= 129; ++d) {
 		chr = String.fromCharCode(d);
 		if (!chr.match(/[\$\&\+\,\;\=]/)) {
 			strictEqual(URI.escapeComponent(chr), encodeURIComponent(chr));
@@ -219,17 +227,80 @@ test("Escape Component", function () {
 		}
 	}
 	strictEqual(URI.escapeComponent("\u00c0"), encodeURIComponent("\u00c0"));
+	strictEqual(URI.escapeComponent("\u07ff"), encodeURIComponent("\u07ff"));
+	strictEqual(URI.escapeComponent("\u0800"), encodeURIComponent("\u0800"));
 	strictEqual(URI.escapeComponent("\u30a2"), encodeURIComponent("\u30a2"));
 });
 
 test("Unescape Component", function () {
 	var chr;
-	for (var d = 0; d <= 128; ++d) {
+	for (var d = 0; d <= 129; ++d) {
 		chr = String.fromCharCode(d);
 		strictEqual(URI.unescapeComponent(encodeURIComponent(chr)), chr);
 	}
 	strictEqual(URI.unescapeComponent(encodeURIComponent("\u00c0")), "\u00c0");
+	strictEqual(URI.unescapeComponent(encodeURIComponent("\u07ff")), "\u07ff");
+	strictEqual(URI.unescapeComponent(encodeURIComponent("\u0800")), "\u0800");
 	strictEqual(URI.unescapeComponent(encodeURIComponent("\u30a2")), "\u30a2");
+});
+
+//
+// IRI
+//
+
+var IRI_OPTION = { iri : true }
+
+test("IRI Parsing", function () {
+	var components = URI.parse("uri://us\xA0er:pa\uD7FFss@example.com:123/o\uF900ne/t\uFDCFwo.t\uFDF0hree?q1=a1\uF8FF\uE000&q2=a2#bo\uFFEFdy", IRI_OPTION);
+	strictEqual(components.errors.length, 0, "all errors");
+	strictEqual(components.scheme, "uri", "scheme");
+	//strictEqual(components.authority, "us\xA0er:pa\uD7FFss@example.com:123", "authority");
+	strictEqual(components.userinfo, "us\xA0er:pa\uD7FFss", "userinfo");
+	strictEqual(components.host, "example.com", "host");
+	strictEqual(components.port, 123, "port");
+	strictEqual(components.path, "/o\uF900ne/t\uFDCFwo.t\uFDF0hree", "path");
+	strictEqual(components.query, "q1=a1\uF8FF\uE000&q2=a2", "query");
+	strictEqual(components.fragment, "bo\uFFEFdy", "fragment");
+});
+
+test("IRI Serialization", function () {
+	var components = {
+		scheme : "uri",
+		userinfo : "us\xA0er:pa\uD7FFss",
+		host : "example.com",
+		port : 123,
+		path : "/o\uF900ne/t\uFDCFwo.t\uFDF0hree",
+		query : "q1=a1\uF8FF\uE000&q2=a2",
+		fragment : "bo\uFFEFdy\uE001"
+	};
+	strictEqual(URI.serialize(components, IRI_OPTION), "uri://us\xA0er:pa\uD7FFss@example.com:123/o\uF900ne/t\uFDCFwo.t\uFDF0hree?q1=a1\uF8FF\uE000&q2=a2#bo\uFFEFdy%EE%80%81");
+});
+
+test("IRI Normalizing", function () {
+	strictEqual(URI.normalize("uri://www.example.org/red%09ros\xE9#red", IRI_OPTION), "uri://www.example.org/red%09ros\xE9#red");
+});
+
+test("IRI Equals", function () {
+	//example from RFC 3987
+	strictEqual(URI.equal("example://a/b/c/%7Bfoo%7D/ros\xE9", "eXAMPLE://a/./b/../b/%63/%7bfoo%7d/ros%C3%A9", IRI_OPTION), true);
+});
+
+test("Convert IRI to URI", function () {
+	//example from RFC 3987
+	strictEqual(URI.serialize(URI.parse("uri://www.example.org/red%09ros\xE9#red", IRI_OPTION)), "uri://www.example.org/red%09ros%C3%A9#red");
+	
+	//Internationalized Domain Name conversion via punycode example from RFC 3987
+	//strictEqual(URI.serialize(URI.parse("uri://r\xE9sum\xE9.example.org", IRI_OPTION)), "uri://xn--rsum-bpad.example.org");  //not supported
+});
+
+test("Convert URI to IRI", function () {
+	//examples from RFC 3987
+	strictEqual(URI.serialize(URI.parse("uri://www.example.org/D%C3%BCrst"), IRI_OPTION), "uri://www.example.org/D\xFCrst");
+	strictEqual(URI.serialize(URI.parse("uri://www.example.org/D%FCrst"), IRI_OPTION), "uri://www.example.org/D%FCrst");
+	strictEqual(URI.serialize(URI.parse("uri://xn--99zt52a.example.org/%e2%80%ae"), IRI_OPTION), "uri://xn--99zt52a.example.org/%E2%80%AE");  //or uri://\u7D0D\u8C46.example.org/%E2%80%AE
+	
+	//Internationalized Domain Name conversion via punycode example from RFC 3987
+	//strictEqual(URI.serialize(URI.parse("uri://xn--rsum-bpad.example.org"), IRI_OPTION), "uri://r\xE9sum\xE9.example.org");  //not supported
 });
 
 //

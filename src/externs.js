@@ -72,7 +72,13 @@ Options.prototype = {
 	 * @values "uri", "absolute", "relative", "same-document", "suffix"
 	 */
 	
-	reference : ""
+	reference : "",
+	
+	/**
+	 * @type boolean
+	 */
+	
+	iri : false
 };
 
 /** 

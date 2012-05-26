@@ -3,9 +3,9 @@
  * 
  * @fileoverview An RFC 3986 compliant, scheme extendable URI parsing/validating/resolving library for JavaScript.
  * @author <a href="mailto:gary.court@gmail.com">Gary Court</a>
- * @version 1.4.2
+ * @version 1.5.0
  * @see http://github.com/garycourt/uri-js
- * @license URI.js v1.4.2 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js
+ * @license URI.js v1.5.0 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js
  */
 
 /**
@@ -50,7 +50,6 @@ if (typeof require !== "function") {
 }
 URI = (function () {
 	"use strict";
-	
 	var	
 		/**
 		 * @param {...string} sets
@@ -76,69 +75,85 @@ URI = (function () {
 		subexp = function (str) {
 			return "(?:" + str + ")";
 		},
-	
-		ALPHA$$ = "[A-Za-z]",
-		CR$ = "[\\x0D]",
-		DIGIT$$ = "[0-9]",
-		DQUOTE$$ = "[\\x22]",
-		HEXDIG$$ = mergeSet(DIGIT$$, "[A-Fa-f]"),  //case-insensitive
-		LF$$ = "[\\x0A]",
-		SP$$ = "[\\x20]",
-		PCT_ENCODED$ = subexp("%" + HEXDIG$$ + HEXDIG$$),
-		GEN_DELIMS$$ = "[\\:\\/\\?\\#\\[\\]\\@]",
-		SUB_DELIMS$$ = "[\\!\\$\\&\\'\\(\\)\\*\\+\\,\\;\\=]",
-		RESERVED$$ = mergeSet(GEN_DELIMS$$, SUB_DELIMS$$),
-		UNRESERVED$$ = mergeSet(ALPHA$$, DIGIT$$, "[\\-\\.\\_\\~]"),
-		SCHEME$ = subexp(ALPHA$$ + mergeSet(ALPHA$$, DIGIT$$, "[\\+\\-\\.]") + "*"),
-		USERINFO$ = subexp(subexp(PCT_ENCODED$ + "|" + mergeSet(UNRESERVED$$, SUB_DELIMS$$, "[\\:]")) + "*"),
-		DEC_OCTET$ = subexp(subexp("25[0-5]") + "|" + subexp("2[0-4]" + DIGIT$$) + "|" + subexp("1" + DIGIT$$ + DIGIT$$) + "|" + subexp("[1-9]" + DIGIT$$) + "|" + DIGIT$$),
-		IPV4ADDRESS$ = subexp(DEC_OCTET$ + "\\." + DEC_OCTET$ + "\\." + DEC_OCTET$ + "\\." + DEC_OCTET$),
-		H16$ = subexp(HEXDIG$$ + "{1,4}"),
-		LS32$ = subexp(subexp(H16$ + "\\:" + H16$) + "|" + IPV4ADDRESS$),
-		IPV6ADDRESS$ = subexp(mergeSet(UNRESERVED$$, SUB_DELIMS$$, "[\\:]") + "+"),  //FIXME
-		IPVFUTURE$ = subexp("v" + HEXDIG$$ + "+\\." + mergeSet(UNRESERVED$$, SUB_DELIMS$$, "[\\:]") + "+"),
-		IP_LITERAL$ = subexp("\\[" + subexp(IPV6ADDRESS$ + "|" + IPVFUTURE$) + "\\]"),
-		REG_NAME$ = subexp(subexp(PCT_ENCODED$ + "|" + mergeSet(UNRESERVED$$, SUB_DELIMS$$)) + "*"),
-		HOST$ = subexp(IP_LITERAL$ + "|" + IPV4ADDRESS$ + "|" + REG_NAME$),
-		PORT$ = subexp(DIGIT$$ + "*"),
-		AUTHORITY$ = subexp(subexp(USERINFO$ + "@") + "?" + HOST$ + subexp("\\:" + PORT$) + "?"),
-		PCHAR$ = subexp(PCT_ENCODED$ + "|" + mergeSet(UNRESERVED$$, SUB_DELIMS$$, "[\\:\\@]")),
-		SEGMENT$ = subexp(PCHAR$ + "*"),
-		SEGMENT_NZ$ = subexp(PCHAR$ + "+"),
-		SEGMENT_NZ_NC$ = subexp(subexp(PCT_ENCODED$ + "|" + mergeSet(UNRESERVED$$, SUB_DELIMS$$, "[\\@]")) + "+"),
-		PATH_ABEMPTY$ = subexp(subexp("\\/" + SEGMENT$) + "*"),
-		PATH_ABSOLUTE$ = subexp("\\/" + subexp(SEGMENT_NZ$ + PATH_ABEMPTY$) + "?"),  //simplified
-		PATH_NOSCHEME$ = subexp(SEGMENT_NZ_NC$ + PATH_ABEMPTY$),  //simplified
-		PATH_ROOTLESS$ = subexp(SEGMENT_NZ$ + PATH_ABEMPTY$),  //simplified
-		PATH_EMPTY$ = subexp(""),  //simplified
-		PATH$ = subexp(PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_NOSCHEME$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$),
-		QUERY$ = subexp(subexp(PCHAR$ + "|[\\/\\?]") + "*"),
-		FRAGMENT$ = subexp(subexp(PCHAR$ + "|[\\/\\?]") + "*"),
-		HIER_PART$ = subexp(subexp("\\/\\/" + AUTHORITY$ + PATH_ABEMPTY$) + "|" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$),
-		URI$ = subexp(SCHEME$ + "\\:" + HIER_PART$ + subexp("\\?" + QUERY$) + "?" + subexp("\\#" + FRAGMENT$) + "?"),
-		RELATIVE_PART$ = subexp(subexp("\\/\\/" + AUTHORITY$ + PATH_ABEMPTY$) + "|" + PATH_ABSOLUTE$ + "|" + PATH_NOSCHEME$ + "|" + PATH_EMPTY$),
-		RELATIVE$ = subexp(RELATIVE_PART$ + subexp("\\?" + QUERY$) + "?" + subexp("\\#" + FRAGMENT$) + "?"),
-		URI_REFERENCE$ = subexp(URI$ + "|" + RELATIVE$),
-		ABSOLUTE_URI$ = subexp(SCHEME$ + "\\:" + HIER_PART$ + subexp("\\?" + QUERY$) + "?"),
 		
-		GENERIC_REF$ = "^(" + SCHEME$ + ")\\:" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?" + subexp("\\#(" + FRAGMENT$ + ")") + "?$",
-		RELATIVE_REF$ = "^(){0}" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_NOSCHEME$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?" + subexp("\\#(" + FRAGMENT$ + ")") + "?$",
-		ABSOLUTE_REF$ = "^(" + SCHEME$ + ")\\:" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?$",
-		SAMEDOC_REF$ = "^" + subexp("\\#(" + FRAGMENT$ + ")") + "?$",
-		AUTHORITY_REF$ = "^" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?$",
+		/**
+		 * @param {boolean} iri
+		 * @return {Object}
+		 */
 		
-		URI_REF = new RegExp("(" + GENERIC_REF$ + ")|(" + RELATIVE_REF$ + ")"),
-		NOT_SCHEME = new RegExp(mergeSet("[^]", ALPHA$$, DIGIT$$, "[\\+\\-\\.]"), "g"),
-		NOT_USERINFO = new RegExp(mergeSet("[^\\%\\:]", UNRESERVED$$, SUB_DELIMS$$), "g"),
-		NOT_HOST = new RegExp(mergeSet("[^\\%]", UNRESERVED$$, SUB_DELIMS$$), "g"),
-		NOT_PATH = new RegExp(mergeSet("[^\\%\\/\\:\\@]", UNRESERVED$$, SUB_DELIMS$$), "g"),
-		NOT_PATH_NOSCHEME = new RegExp(mergeSet("[^\\%\\/\\@]", UNRESERVED$$, SUB_DELIMS$$), "g"),
-		NOT_QUERY = new RegExp(mergeSet("[^\\%]", UNRESERVED$$, SUB_DELIMS$$, "[\\:\\@\\/\\?]"), "g"),
-		NOT_FRAGMENT = NOT_QUERY,
-		ESCAPE = new RegExp(mergeSet("[^]", UNRESERVED$$, SUB_DELIMS$$), "g"),
-		UNRESERVED = new RegExp(UNRESERVED$$, "g"),
-		OTHER_CHARS = new RegExp(mergeSet("[^\\%]", UNRESERVED$$, RESERVED$$), "g"),
-		PCT_ENCODEDS = new RegExp(PCT_ENCODED$ + "+", "g"),
+		buildExps = function (iri) {
+			var
+				ALPHA$$ = "[A-Za-z]",
+				CR$ = "[\\x0D]",
+				DIGIT$$ = "[0-9]",
+				DQUOTE$$ = "[\\x22]",
+				HEXDIG$$ = mergeSet(DIGIT$$, "[A-Fa-f]"),  //case-insensitive
+				LF$$ = "[\\x0A]",
+				SP$$ = "[\\x20]",
+				PCT_ENCODED$ = subexp(subexp("%[EFef]" + HEXDIG$$ + "%" + HEXDIG$$ + HEXDIG$$ + "%" + HEXDIG$$ + HEXDIG$$) + "|" + subexp("%[89A-Fa-f]" + HEXDIG$$ + "%" + HEXDIG$$ + HEXDIG$$) + "|" + subexp("%" + HEXDIG$$ + HEXDIG$$)),  //expanded
+				GEN_DELIMS$$ = "[\\:\\/\\?\\#\\[\\]\\@]",
+				SUB_DELIMS$$ = "[\\!\\$\\&\\'\\(\\)\\*\\+\\,\\;\\=]",
+				RESERVED$$ = mergeSet(GEN_DELIMS$$, SUB_DELIMS$$),
+				UCSCHAR$$ = iri ? "[\\xA0-\\u200D\\u2010-\\u2029\\u202F-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFEF]" : "[]",  //subset, excludes bidi control characters
+				IPRIVATE$$ = iri ? "[\\uE000-\\uF8FF]" : "[]",  //subset
+				UNRESERVED$$ = mergeSet(ALPHA$$, DIGIT$$, "[\\-\\.\\_\\~]", UCSCHAR$$),
+				SCHEME$ = subexp(ALPHA$$ + mergeSet(ALPHA$$, DIGIT$$, "[\\+\\-\\.]") + "*"),
+				USERINFO$ = subexp(subexp(PCT_ENCODED$ + "|" + mergeSet(UNRESERVED$$, SUB_DELIMS$$, "[\\:]")) + "*"),
+				DEC_OCTET$ = subexp(subexp("25[0-5]") + "|" + subexp("2[0-4]" + DIGIT$$) + "|" + subexp("1" + DIGIT$$ + DIGIT$$) + "|" + subexp("[1-9]" + DIGIT$$) + "|" + DIGIT$$),
+				IPV4ADDRESS$ = subexp(DEC_OCTET$ + "\\." + DEC_OCTET$ + "\\." + DEC_OCTET$ + "\\." + DEC_OCTET$),
+				H16$ = subexp(HEXDIG$$ + "{1,4}"),
+				LS32$ = subexp(subexp(H16$ + "\\:" + H16$) + "|" + IPV4ADDRESS$),
+				IPV6ADDRESS$ = subexp(mergeSet(UNRESERVED$$, SUB_DELIMS$$, "[\\:]") + "+"),  //FIXME
+				IPVFUTURE$ = subexp("v" + HEXDIG$$ + "+\\." + mergeSet(UNRESERVED$$, SUB_DELIMS$$, "[\\:]") + "+"),
+				IP_LITERAL$ = subexp("\\[" + subexp(IPV6ADDRESS$ + "|" + IPVFUTURE$) + "\\]"),
+				REG_NAME$ = subexp(subexp(PCT_ENCODED$ + "|" + mergeSet(UNRESERVED$$, SUB_DELIMS$$)) + "*"),
+				HOST$ = subexp(IP_LITERAL$ + "|" + IPV4ADDRESS$ + "|" + REG_NAME$),
+				PORT$ = subexp(DIGIT$$ + "*"),
+				AUTHORITY$ = subexp(subexp(USERINFO$ + "@") + "?" + HOST$ + subexp("\\:" + PORT$) + "?"),
+				PCHAR$ = subexp(PCT_ENCODED$ + "|" + mergeSet(UNRESERVED$$, SUB_DELIMS$$, "[\\:\\@]")),
+				SEGMENT$ = subexp(PCHAR$ + "*"),
+				SEGMENT_NZ$ = subexp(PCHAR$ + "+"),
+				SEGMENT_NZ_NC$ = subexp(subexp(PCT_ENCODED$ + "|" + mergeSet(UNRESERVED$$, SUB_DELIMS$$, "[\\@]")) + "+"),
+				PATH_ABEMPTY$ = subexp(subexp("\\/" + SEGMENT$) + "*"),
+				PATH_ABSOLUTE$ = subexp("\\/" + subexp(SEGMENT_NZ$ + PATH_ABEMPTY$) + "?"),  //simplified
+				PATH_NOSCHEME$ = subexp(SEGMENT_NZ_NC$ + PATH_ABEMPTY$),  //simplified
+				PATH_ROOTLESS$ = subexp(SEGMENT_NZ$ + PATH_ABEMPTY$),  //simplified
+				PATH_EMPTY$ = subexp(""),  //simplified
+				PATH$ = subexp(PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_NOSCHEME$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$),
+				QUERY$ = subexp(subexp(PCHAR$ + "|" + mergeSet("[\\/\\?]", IPRIVATE$$)) + "*"),
+				FRAGMENT$ = subexp(subexp(PCHAR$ + "|[\\/\\?]") + "*"),
+				HIER_PART$ = subexp(subexp("\\/\\/" + AUTHORITY$ + PATH_ABEMPTY$) + "|" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$),
+				URI$ = subexp(SCHEME$ + "\\:" + HIER_PART$ + subexp("\\?" + QUERY$) + "?" + subexp("\\#" + FRAGMENT$) + "?"),
+				RELATIVE_PART$ = subexp(subexp("\\/\\/" + AUTHORITY$ + PATH_ABEMPTY$) + "|" + PATH_ABSOLUTE$ + "|" + PATH_NOSCHEME$ + "|" + PATH_EMPTY$),
+				RELATIVE$ = subexp(RELATIVE_PART$ + subexp("\\?" + QUERY$) + "?" + subexp("\\#" + FRAGMENT$) + "?"),
+				URI_REFERENCE$ = subexp(URI$ + "|" + RELATIVE$),
+				ABSOLUTE_URI$ = subexp(SCHEME$ + "\\:" + HIER_PART$ + subexp("\\?" + QUERY$) + "?"),
+				
+				GENERIC_REF$ = "^(" + SCHEME$ + ")\\:" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?" + subexp("\\#(" + FRAGMENT$ + ")") + "?$",
+				RELATIVE_REF$ = "^(){0}" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_NOSCHEME$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?" + subexp("\\#(" + FRAGMENT$ + ")") + "?$",
+				ABSOLUTE_REF$ = "^(" + SCHEME$ + ")\\:" + subexp(subexp("\\/\\/(" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?)") + "?(" + PATH_ABEMPTY$ + "|" + PATH_ABSOLUTE$ + "|" + PATH_ROOTLESS$ + "|" + PATH_EMPTY$ + ")") + subexp("\\?(" + QUERY$ + ")") + "?$",
+				SAMEDOC_REF$ = "^" + subexp("\\#(" + FRAGMENT$ + ")") + "?$",
+				AUTHORITY_REF$ = "^" + subexp("(" + USERINFO$ + ")@") + "?(" + HOST$ + ")" + subexp("\\:(" + PORT$ + ")") + "?$"
+			;
+			
+			return {
+				URI_REF : new RegExp("(" + GENERIC_REF$ + ")|(" + RELATIVE_REF$ + ")"),
+				NOT_SCHEME : new RegExp(mergeSet("[^]", ALPHA$$, DIGIT$$, "[\\+\\-\\.]"), "g"),
+				NOT_USERINFO : new RegExp(mergeSet("[^\\%\\:]", UNRESERVED$$, SUB_DELIMS$$), "g"),
+				NOT_HOST : new RegExp(mergeSet("[^\\%]", UNRESERVED$$, SUB_DELIMS$$), "g"),
+				NOT_PATH : new RegExp(mergeSet("[^\\%\\/\\:\\@]", UNRESERVED$$, SUB_DELIMS$$), "g"),
+				NOT_PATH_NOSCHEME : new RegExp(mergeSet("[^\\%\\/\\@]", UNRESERVED$$, SUB_DELIMS$$), "g"),
+				NOT_QUERY : new RegExp(mergeSet("[^\\%]", UNRESERVED$$, SUB_DELIMS$$, "[\\:\\@\\/\\?]", IPRIVATE$$), "g"),
+				NOT_FRAGMENT : new RegExp(mergeSet("[^\\%]", UNRESERVED$$, SUB_DELIMS$$, "[\\:\\@\\/\\?]"), "g"),
+				ESCAPE : new RegExp(mergeSet("[^]", UNRESERVED$$, SUB_DELIMS$$), "g"),
+				UNRESERVED : new RegExp(UNRESERVED$$, "g"),
+				OTHER_CHARS : new RegExp(mergeSet("[^\\%]", UNRESERVED$$, RESERVED$$), "g"),
+				PCT_ENCODED : new RegExp(PCT_ENCODED$, "g")
+			};
+		},
+		
+		URI_PROTOCOL = buildExps(false),
+		IRI_PROTOCOL = buildExps(true),
 		URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?([^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#((?:.|\n)*))?/i,
 		RDS1 = /^\.\.?\//,
 		RDS2 = /^\/\.(\/|$)/,
@@ -174,62 +189,41 @@ URI = (function () {
 		 * @param {string} str
 		 * @return {string}
 		 */
-		pctDecUnreserved = function (str) {
-			var newStr = "", 
-				i = 0,
-				c, s;
-	 
-			while (i < str.length) {
-				c = parseInt(str.substr(i + 1, 2), 16);
-	 
-				if (c < 128) {
-					s = String.fromCharCode(c);
-					if (s.match(UNRESERVED)) {
-						newStr += s;
-					} else {
-						newStr += str.substr(i, 3);
-					}
-					i += 3;
-				}
-				else if ((c > 191) && (c < 224)) {
-					newStr += str.substr(i, 6);
-					i += 6;
-				}
-				else {
-					newStr += str.substr(i, 9);
-					i += 9;
-				}
-			}
-	 
-			return newStr;
-		},
-		
-		/**
-		 * @param {string} str
-		 * @return {string}
-		 */
 		pctDecChars = function (str) {
 			var newStr = "", 
 				i = 0,
+				il = str.length,
 				c, c2, c3;
 	 
-			while (i < str.length) {
+			while (i < il) {
 				c = parseInt(str.substr(i + 1, 2), 16);
 	 
 				if (c < 128) {
 					newStr += String.fromCharCode(c);
 					i += 3;
 				}
-				else if ((c > 191) && (c < 224)) {
-					c2 = parseInt(str.substr(i + 4, 2), 16);
-					newStr += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
+				else if (c >= 194 && c < 224) {
+					if ((il - i) >= 6) {
+						c2 = parseInt(str.substr(i + 4, 2), 16);
+						newStr += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
+					} else {
+						newStr += str.substr(i, 6);
+					}
 					i += 6;
 				}
-				else {
-					c2 = parseInt(str.substr(i + 4, 2), 16);
-					c3 = parseInt(str.substr(i + 7, 2), 16);
-					newStr += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+				else if (c >= 224) {
+					if ((il - i) >= 9) {
+						c2 = parseInt(str.substr(i + 4, 2), 16);
+						c3 = parseInt(str.substr(i + 7, 2), 16);
+						newStr += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
+					} else {
+						newStr += str.substr(i, 9);
+					}
 					i += 9;
+				}
+				else {
+					newStr += str.substr(i, 3);
+					i += 3;
 				}
 			}
 	 
@@ -241,6 +235,15 @@ URI = (function () {
 		 */
 		typeOf = function (o) {
 			return o === undefined ? "undefined" : (o === null ? "null" : Object.prototype.toString.call(o).split(" ").pop().split("]").shift().toLowerCase());
+		},
+		
+		/**
+		 * @param {string} str
+		 * @return {string}
+		 */
+		
+		upperCase = function (str) {
+			return str.toUpperCase();
 		},
 		
 		/**
@@ -260,19 +263,19 @@ URI = (function () {
 	
 	Components.prototype = {
 		/**
-		 * @type String
+		 * @type string
 		 */
 		
 		scheme : undefined,
 		
 		/**
-		 * @type String
+		 * @type string
 		 */
 		
 		userinfo : undefined,
 		
 		/**
-		 * @type String
+		 * @type string
 		 */
 		
 		host : undefined,
@@ -326,24 +329,68 @@ URI = (function () {
 	URI.SCHEMES = {};
 	
 	/**
+	 * @private
+	 * @param {URIComponents} components
+	 * @param {Object} protocol
+	 * @return {URIComponents}
+	 */
+	
+	URI._normalizeComponentEncoding = function (components, protocol) {
+		function decodeUnreserved(str) {
+			var decStr = pctDecChars(str);
+			return (!decStr.match(protocol.UNRESERVED) ? str : decStr);
+		}
+		
+		if (components.scheme) {
+			components.scheme = components.scheme.toString().replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.NOT_SCHEME, "");
+		}
+		
+		if (components.userinfo !== undefined) {
+			components.userinfo = components.userinfo.toString().replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_USERINFO, pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, upperCase);
+		}
+		
+		if (components.host !== undefined) {
+			components.host = components.host.toString().replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.NOT_HOST, pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, upperCase);
+		}
+		
+		if (components.path !== undefined) {
+			components.path = components.path.toString().replace(protocol.PCT_ENCODED, decodeUnreserved).replace((components.scheme ? protocol.NOT_PATH : protocol.NOT_PATH_NOSCHEME), pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, upperCase);
+		}
+		
+		if (components.query !== undefined) {
+			components.query = components.query.toString().replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_QUERY, pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, upperCase);
+		}
+		
+		if (components.fragment !== undefined) {
+			components.fragment = components.fragment.toString().replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_FRAGMENT, pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, upperCase);
+		}
+	};
+	
+	/**
 	 * @param {string} uriString
 	 * @param {Options} [options]
 	 * @returns {URIComponents}
 	 */
 	
 	URI.parse = function (uriString, options) {
-		var matches, 
+		var protocol = URI_PROTOCOL,
+			matches, 
+			parseError = false,
 			components = new Components(),
 			schemeHandler;
 		
 		uriString = uriString ? uriString.toString() : "";
-		options = options || {};
+		options = options || /** @type {Options} */ ({});
+		
+		if (options.iri) {
+			protocol = IRI_PROTOCOL;
+		}
 		
 		if (options.reference === "suffix") {
 			uriString = (options.scheme ? options.scheme + ":" : "") + "//" + uriString;
 		}
 		
-		matches = uriString.match(URI_REF);
+		matches = uriString.match(protocol.URI_REF);
 		
 		if (matches) {
 			if (matches[1]) {
@@ -356,6 +403,7 @@ URI = (function () {
 		} 
 		
 		if (!matches) {
+			parseError = true;
 			if (!options.tolerant) {
 				components.errors.push("URI is not strictly valid.");
 			}
@@ -411,13 +459,22 @@ URI = (function () {
 				components.errors.push("URI is not a " + options.reference + " reference.");
 			}
 			
-			//check if a handler for the scheme exists
+			//find scheme handler
 			schemeHandler = URI.SCHEMES[(options.scheme || components.scheme || "").toLowerCase()];
+			
+			//check if encoding needs to be fixed
+			if (options.iri && schemeHandler && !schemeHandler.iri) {  //if IRI, check if scheme can't handle IRIs
+				URI._normalizeComponentEncoding(components, URI_PROTOCOL);  //convert IRI -> URI
+			} else if (parseError) {  //if URI is not strictly valid
+				URI._normalizeComponentEncoding(components, protocol);  //fix encoding issues
+			}
+			
+			//perform scheme specific parsing
 			if (schemeHandler && schemeHandler.parse) {
-				//perform extra parsing
 				schemeHandler.parse(components, options);
 			}
 		} else {
+			parseError = true;
 			components.errors.push("URI can not be parsed.");
 		}
 		
@@ -427,19 +484,22 @@ URI = (function () {
 	/**
 	 * @private
 	 * @param {URIComponents} components
+	 * @param {Options} [options]
 	 * @returns {string|undefined}
 	 */
 	
-	URI._recomposeAuthority = function (components) {
+	URI._recomposeAuthority = function (components, options) {
 		var uriTokens = [];
 		
 		if (components.userinfo !== undefined) {
-			uriTokens.push(components.userinfo.toString().replace(NOT_USERINFO, pctEncChar));
+			uriTokens.push(components.userinfo);
 			uriTokens.push("@");
 		}
+		
 		if (components.host !== undefined) {
-			uriTokens.push(components.host.toString().toLowerCase().replace(NOT_HOST, pctEncChar));
+			uriTokens.push(components.host);
 		}
+		
 		if (typeof components.port === "number") {
 			uriTokens.push(":");
 			uriTokens.push(components.port.toString(10));
@@ -483,25 +543,34 @@ URI = (function () {
 	 */
 	
 	URI.serialize = function (components, options) {
-		var uriTokens = [], 
+		var protocol = URI_PROTOCOL,
+			uriTokens = [], 
 			schemeHandler,
 			authority,
 			s;
-		options = options || {};
+		options = options || /** @type {Options} */ ({});
 		
-		//check if a handler for the scheme exists
+		if (options.iri) {
+			protocol = IRI_PROTOCOL;
+		}
+		
+		//find scheme handler
 		schemeHandler = URI.SCHEMES[(options.scheme || components.scheme || "").toLowerCase()];
+		
+		//perform scheme specific serialization
 		if (schemeHandler && schemeHandler.serialize) {
-			//perform extra serialization
 			schemeHandler.serialize(components, options);
 		}
 		
+		//normalize encoding
+		URI._normalizeComponentEncoding(components, protocol);
+		
 		if (options.reference !== "suffix" && components.scheme) {
-			uriTokens.push(components.scheme.toString().toLowerCase().replace(NOT_SCHEME, ""));
+			uriTokens.push(components.scheme);
 			uriTokens.push(":");
 		}
 		
-		authority = URI._recomposeAuthority(components);
+		authority = URI._recomposeAuthority(components, options);
 		if (authority !== undefined) {
 			if (options.reference !== "suffix") {
 				uriTokens.push("//");
@@ -515,38 +584,26 @@ URI = (function () {
 		}
 		
 		if (components.path !== undefined) {
-			s = URI.removeDotSegments(components.path.toString().replace(/%2E/ig, "."));
-			
-			if (components.scheme) {
-				s = s.replace(NOT_PATH, pctEncChar);
-			} else {
-				s = s.replace(NOT_PATH_NOSCHEME, pctEncChar);
-			}
+			s = URI.removeDotSegments(components.path);
 			
 			if (authority === undefined) {
 				s = s.replace(/^\/\//, "/%2F");  //don't allow the path to start with "//"
 			}
+			
 			uriTokens.push(s);
 		}
 		
 		if (components.query !== undefined) {
 			uriTokens.push("?");
-			uriTokens.push(components.query.toString().replace(NOT_QUERY, pctEncChar));
+			uriTokens.push(components.query);
 		}
 		
 		if (components.fragment !== undefined) {
 			uriTokens.push("#");
-			uriTokens.push(components.fragment.toString().replace(NOT_FRAGMENT, pctEncChar));
+			uriTokens.push(components.fragment);
 		}
 		
-		return uriTokens
-			.join('')  //merge tokens into a string
-			.replace(PCT_ENCODEDS, pctDecUnreserved)  //undecode unreserved characters
-			//.replace(OTHER_CHARS, pctEncChar)  //replace non-URI characters
-			.replace(/%[0-9A-Fa-f]{2}/g, function (str) {  //uppercase percent encoded characters
-				return str.toUpperCase();
-			})
-		;
+		return uriTokens.join('');  //merge tokens into a string
 	};
 	
 	/**
@@ -564,7 +621,7 @@ URI = (function () {
 			base = URI.parse(URI.serialize(base, options), options);  //normalize base components
 			relative = URI.parse(URI.serialize(relative, options), options);  //normalize relative components
 		}
-		options = options || {};
+		options = options || /** @type {Options} */ ({});
 		
 		if (!options.tolerant && relative.scheme) {
 			target.scheme = relative.scheme;
@@ -669,20 +726,22 @@ URI = (function () {
 	
 	/**
 	 * @param {string} str
+	 * @param {Options} [options]
 	 * @returns {string}
 	 */
 	
-	URI.escapeComponent = function (str) {
-		return str && str.toString().replace(ESCAPE, pctEncChar);
+	URI.escapeComponent = function (str, options) {
+		return str && str.toString().replace((!options || !options.iri ? URI_PROTOCOL.ESCAPE : IRI_PROTOCOL.ESCAPE), pctEncChar);
 	};
 	
 	/**
 	 * @param {string} str
+	 * @param {Options} [options]
 	 * @returns {string}
 	 */
 	
-	URI.unescapeComponent = function (str) {
-		return str && str.toString().replace(PCT_ENCODEDS, pctDecChars);
+	URI.unescapeComponent = function (str, options) {
+		return str && str.toString().replace((!options || !options.iri ? URI_PROTOCOL.PCT_ENCODED : IRI_PROTOCOL.PCT_ENCODED), pctDecChars);
 	};
 	
 	//export API
