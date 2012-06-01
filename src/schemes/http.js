@@ -1,11 +1,18 @@
 (function () {
 	var URI = require("../uri").URI;
 	
-	//RFC 2616
-	URI.SCHEMES["http"] = {
+	//RFC 2616 and RFC 2818
+	URI.SCHEMES["http"] = URI.SCHEMES["https"] = {
+		parse : function (components, options) {
+			//report missing host
+			if (!components.host) {
+				components.errors.push("HTTP URIs must have a host.");
+			}
+		},
+		
 		serialize : function (components, options) {
 			//normalize the default port
-			if (components.port === 80 || components.port === "") {
+			if (components.port === (components.scheme === "http" ? 80 : 443) || components.port === "") {
 				components.port = undefined;
 			}
 			//normalize the empty path

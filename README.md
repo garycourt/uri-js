@@ -1,6 +1,7 @@
 # URI.js
 
 URI.js is an [RFC 3986](http://www.ietf.org/rfc/rfc3986.txt) compliant, scheme extendable URI parsing/validating/resolving library for all JavaScript environments (browsers, Node.js, etc).
+It is also compliant with the IRI ([RFC 3987](http://www.ietf.org/rfc/rfc3987.txt)) specification.
 
 ## Loading
 
@@ -45,21 +46,36 @@ To load in a CommonJS (Node.js) environment, simply use:
 
 	URI.equal("example://a/b/c/%7Bfoo%7D", "eXAMPLE://a/./b/../b/%63/%7bfoo%7d") === true
 
+### IRI Support
+
+	//convert IRI to URI
+	URI.serialize(URI.parse("uri://example.org/rosé", {iri:true})) === "uri://example.org/ros%E9"
+	//convert URI to IRI
+	URI.serialize(URI.parse("uri://example.org/ros%E9"), {iri:true}) === "uri://example.org/rosé"
+
 ### Options
 
 All of the above functions can accept an additional options argument that is an object that can contain one or more of the following properties:
 
-*	`scheme`
+*	`scheme` (string)
 	
 	Indicates the scheme that the URI should be treated as, overriding the URI's normal scheme parsing behavior.
 
-*	`reference`
+*	`reference` (string)
 	
 	If set to `"suffix"`, it indicates that the URI is in the suffix format, and the validator will use the option's `scheme` property to determine the URI's scheme.
 	
-*	`tolerant`
+*	`tolerant` (boolean, false)
 	
 	If set to `true`, the parser will not report invalid URIs. It will also relax URI resolving rules.
+
+*	`absolutePath` (boolean, false)
+
+	If set to `true`, the serializer will not resolve a relative `path` component.
+
+*	`iri` (boolean, false)
+
+	If set to `true`, the library will unescape non-ASCII characters as per [RFC 3987](http://www.ietf.org/rfc/rfc3987.txt).
 
 ## Scheme Extendable
 
@@ -83,6 +99,7 @@ URI.js supports inserting custom [scheme](http://en.wikipedia.org/wiki/URI_schem
 Currently, URI.js has built in support for the following schemes:
 
 *	http \[[RFC 2616](http://www.ietf.org/rfc/rfc2616.txt)\]
+*	https \[[RFC 2818](http://www.ietf.org/rfc/rfc2818.txt)\]
 *	urn \[[RFC 2141](http://www.ietf.org/rfc/rfc2141.txt)\]
 *	urn:uuid \[[RFC 4122](http://www.ietf.org/rfc/rfc4122.txt)\]
 

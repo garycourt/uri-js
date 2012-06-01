@@ -78,6 +78,12 @@ Options.prototype = {
 	 * @type boolean
 	 */
 	
+	absolutePath : false,
+	
+	/**
+	 * @type boolean
+	 */
+	
 	iri : false
 };
 
@@ -156,6 +162,18 @@ URIComponents.prototype = {
  */
 
 function SchemeHandler() {}
+
+/**
+ * @type boolean
+ */
+	
+SchemeHandler.prototype.absolutePath;
+
+/**
+ * @type boolean
+ */
+	
+SchemeHandler.prototype.iri;
 
 /**
  * @param {URIComponents} components

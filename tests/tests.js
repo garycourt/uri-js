@@ -142,6 +142,10 @@ test("URI Serialization", function () {
 		fragment : "fragment"
 	};
 	strictEqual(URI.serialize(components), "uri://foo:bar@example.com:1/path?query#fragment", "All Components");
+	
+	strictEqual(URI.serialize({path:"//path"}), "/%2Fpath", "Double slash path");
+	strictEqual(URI.serialize({path:"foo:bar"}), "foo%3Abar", "Colon path");
+	strictEqual(URI.serialize({path:"?query"}), "%3Fquery", "Query path");
 });
 
 test("URI Resolving", function () {
@@ -317,6 +321,17 @@ test("HTTP Equals", function () {
 	strictEqual(URI.equal("HTTP://ABC.COM", "http://abc.com/"), true);
 	//test from RFC 3986
 	strictEqual(URI.equal("http://example.com:/", "http://example.com:80/"), true);
+});
+
+//
+// HTTP
+//
+
+module("HTTPS");
+
+test("HTTPS Equals", function () {
+	strictEqual(URI.equal("https://example.com", "https://example.com:443/"), true);
+	strictEqual(URI.equal("https://example.com:/", "https://example.com:443/"), true);
 });
 
 //

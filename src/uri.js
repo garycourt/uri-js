@@ -342,27 +342,27 @@ URI = (function () {
 		}
 		
 		if (components.scheme) {
-			components.scheme = components.scheme.toString().replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.NOT_SCHEME, "");
+			components.scheme = String(components.scheme).replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.NOT_SCHEME, "");
 		}
 		
 		if (components.userinfo !== undefined) {
-			components.userinfo = components.userinfo.toString().replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_USERINFO, pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, upperCase);
+			components.userinfo = String(components.userinfo).replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_USERINFO, pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, upperCase);
 		}
 		
 		if (components.host !== undefined) {
-			components.host = components.host.toString().replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.NOT_HOST, pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, upperCase);
+			components.host = String(components.host).replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.NOT_HOST, pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, upperCase);
 		}
 		
 		if (components.path !== undefined) {
-			components.path = components.path.toString().replace(protocol.PCT_ENCODED, decodeUnreserved).replace((components.scheme ? protocol.NOT_PATH : protocol.NOT_PATH_NOSCHEME), pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, upperCase);
+			components.path = String(components.path).replace(protocol.PCT_ENCODED, decodeUnreserved).replace((components.scheme ? protocol.NOT_PATH : protocol.NOT_PATH_NOSCHEME), pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, upperCase);
 		}
 		
 		if (components.query !== undefined) {
-			components.query = components.query.toString().replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_QUERY, pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, upperCase);
+			components.query = String(components.query).replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_QUERY, pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, upperCase);
 		}
 		
 		if (components.fragment !== undefined) {
-			components.fragment = components.fragment.toString().replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_FRAGMENT, pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, upperCase);
+			components.fragment = String(components.fragment).replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_FRAGMENT, pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, upperCase);
 		}
 	};
 	
@@ -462,11 +462,9 @@ URI = (function () {
 			//find scheme handler
 			schemeHandler = URI.SCHEMES[(options.scheme || components.scheme || "").toLowerCase()];
 			
-			//check if encoding needs to be fixed
-			if (options.iri && schemeHandler && !schemeHandler.iri) {  //if IRI, check if scheme can't handle IRIs
+			//if IRI, check if scheme can't handle IRIs
+			if (options.iri && schemeHandler && !schemeHandler.iri) {
 				URI._normalizeComponentEncoding(components, URI_PROTOCOL);  //convert IRI -> URI
-			} else if (parseError) {  //if URI is not strictly valid
-				URI._normalizeComponentEncoding(components, protocol);  //fix encoding issues
 			}
 			
 			//perform scheme specific parsing
@@ -584,7 +582,11 @@ URI = (function () {
 		}
 		
 		if (components.path !== undefined) {
-			s = URI.removeDotSegments(components.path);
+			s = components.path;
+			
+			if (!options.absolutePath && (!schemeHandler || !schemeHandler.absolutePath)) {
+				s = URI.removeDotSegments(s);
+			}
 			
 			if (authority === undefined) {
 				s = s.replace(/^\/\//, "/%2F");  //don't allow the path to start with "//"
