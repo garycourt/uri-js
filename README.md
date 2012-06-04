@@ -1,7 +1,7 @@
 # URI.js
 
 URI.js is an [RFC 3986](http://www.ietf.org/rfc/rfc3986.txt) compliant, scheme extendable URI parsing/validating/resolving library for all JavaScript environments (browsers, Node.js, etc).
-It is also compliant with the IRI ([RFC 3987](http://www.ietf.org/rfc/rfc3987.txt)) specification.
+It is also compliant with the IRI ([RFC 3987](http://www.ietf.org/rfc/rfc3987.txt)) and IDNA ([RFC 5890](http://www.ietf.org/rfc/rfc5890.txt)) specifications.
 
 ## Loading
 
@@ -40,7 +40,7 @@ To load in a CommonJS (Node.js) environment, simply use:
 
 ### Normalizing
 
-	URI.normalize("HTTP://ABC.com/%7Esmith/home.html") === "http://abc.com/~smith/home.html"
+	URI.normalize("HTTP://ABC.com:80/%7Esmith/home.html") === "http://abc.com/~smith/home.html"
 
 ### Comparison
 
@@ -49,9 +49,9 @@ To load in a CommonJS (Node.js) environment, simply use:
 ### IRI Support
 
 	//convert IRI to URI
-	URI.serialize(URI.parse("uri://example.org/rosé", {iri:true})) === "uri://example.org/ros%E9"
+	URI.serialize(URI.parse("http://examplé.org/rosé", {iri:true})) === "http://xn--exampl-gva.org/ros%C3%A9"
 	//convert URI to IRI
-	URI.serialize(URI.parse("uri://example.org/ros%E9"), {iri:true}) === "uri://example.org/rosé"
+	URI.serialize(URI.parse("http://xn--exampl-gva.org/ros%C3%A9"), {iri:true}) === "http://examplé.org/rosé"
 
 ### Options
 
@@ -76,6 +76,10 @@ All of the above functions can accept an additional options argument that is an 
 *	`iri` (boolean, false)
 
 	If set to `true`, the library will unescape non-ASCII characters as per [RFC 3987](http://www.ietf.org/rfc/rfc3987.txt).
+	
+*	`domainHost` (boolean, false)
+	
+	If set to `true`, the library will treat the `host` component as a domain name, and convert IDNs (International Domain Names) as per [RFC 5891](http://www.ietf.org/rfc/rfc5891.txt).
 
 ## Scheme Extendable
 

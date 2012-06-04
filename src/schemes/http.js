@@ -3,6 +3,8 @@
 	
 	//RFC 2616 and RFC 2818
 	URI.SCHEMES["http"] = URI.SCHEMES["https"] = {
+		domainHost : true,
+		
 		parse : function (components, options) {
 			//report missing host
 			if (!components.host) {
@@ -12,7 +14,7 @@
 		
 		serialize : function (components, options) {
 			//normalize the default port
-			if (components.port === (components.scheme === "http" ? 80 : 443) || components.port === "") {
+			if (components.port === (String(components.scheme).toLowerCase() !== "https" ? 80 : 443) || components.port === "") {
 				components.port = undefined;
 			}
 			//normalize the empty path

@@ -84,7 +84,13 @@ Options.prototype = {
 	 * @type boolean
 	 */
 	
-	iri : false
+	iri : false,
+	
+	/**
+	 * @type boolean
+	 */
+	
+	domainHost : false
 };
 
 /** 
@@ -174,6 +180,12 @@ SchemeHandler.prototype.absolutePath;
  */
 	
 SchemeHandler.prototype.iri;
+
+/**
+ * @type boolean
+ */
+	
+SchemeHandler.prototype.domainHost;
 
 /**
  * @param {URIComponents} components

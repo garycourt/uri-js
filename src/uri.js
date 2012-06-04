@@ -42,15 +42,19 @@
 if (typeof exports === "undefined") {
 	exports = {}; 
 }
+
 if (typeof require !== "function") {
 	require = function (id) {
 		"use strict";
 		return exports;
 	};
 }
+
 URI = (function () {
 	"use strict";
 	var	
+		punycode = require("./punycode"),
+		
 		/**
 		 * @param {...string} sets
 		 * @return {string}
@@ -364,6 +368,8 @@ URI = (function () {
 		if (components.fragment !== undefined) {
 			components.fragment = String(components.fragment).replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_FRAGMENT, pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, upperCase);
 		}
+		
+		return components;
 	};
 	
 	/**
@@ -464,6 +470,15 @@ URI = (function () {
 			
 			//if IRI, check if scheme can't handle IRIs
 			if (options.iri && schemeHandler && !schemeHandler.iri) {
+				//if host component is a domain name
+				if (components.host && (options.domainHost || (schemeHandler && schemeHandler.domainHost))) {
+					try {
+						components.host = punycode.toASCII(components.host.replace(protocol.PCT_ENCODED, pctDecChars).toLowerCase());  //convert Unicode IDN -> ASCII IDN
+					} catch (e) {
+						components.errors.push("Host's domain name can not be converted to ASCII via punycode: " + e);
+					}
+				}
+				
 				URI._normalizeComponentEncoding(components, URI_PROTOCOL);  //convert IRI -> URI
 			}
 			
@@ -558,6 +573,15 @@ URI = (function () {
 		//perform scheme specific serialization
 		if (schemeHandler && schemeHandler.serialize) {
 			schemeHandler.serialize(components, options);
+		}
+		
+		//if host component is a domain name, convert IDN via punycode
+		if (components.host && (options.domainHost || (schemeHandler && schemeHandler.domainHost))) {
+			try {
+				components.host = (!options.iri ? punycode.toASCII(components.host.replace(protocol.PCT_ENCODED, pctDecChars).toLowerCase()) : punycode.toUnicode(components.host));
+			} catch (e) {
+				components.errors.push("Host's domain name can not be converted to " + (!options.iri ? "ASCII" : "Unicode") + " via punycode: " + e);
+			}
 		}
 		
 		//normalize encoding
@@ -751,6 +775,7 @@ URI = (function () {
 	exports.pctDecChars = pctDecChars;
 	exports.Components = Components;
 	exports.URI = URI;
+	exports.punycode = punycode;
 	
 	//name-safe export API
 	exports["pctEncChar"] = pctEncChar;
@@ -767,6 +792,16 @@ URI = (function () {
 		"equal" : URI.equal,
 		"escapeComponent" : URI.escapeComponent,
 		"unescapeComponent" : URI.unescapeComponent
+	};
+	exports["punycode"] = {
+		"ucs2" : {
+			"decode" : punycode.ucs2.decode,
+			"encode" : punycode.ucs2.encode
+		},
+		"decode" : punycode.decode,
+		"encode" : punycode.encode,
+		"toASCII" : punycode.toASCII,
+		"toUnicode" : punycode.toUnicode
 	};
 	
 	//load all schemes

@@ -252,7 +252,7 @@ test("Unescape Component", function () {
 // IRI
 //
 
-var IRI_OPTION = { iri : true }
+var IRI_OPTION = { iri : true };
 
 test("IRI Parsing", function () {
 	var components = URI.parse("uri://us\xA0er:pa\uD7FFss@example.com:123/o\uF900ne/t\uFDCFwo.t\uFDF0hree?q1=a1\uF8FF\uE000&q2=a2#bo\uFFEFdy", IRI_OPTION);
@@ -294,7 +294,7 @@ test("Convert IRI to URI", function () {
 	strictEqual(URI.serialize(URI.parse("uri://www.example.org/red%09ros\xE9#red", IRI_OPTION)), "uri://www.example.org/red%09ros%C3%A9#red");
 	
 	//Internationalized Domain Name conversion via punycode example from RFC 3987
-	//strictEqual(URI.serialize(URI.parse("uri://r\xE9sum\xE9.example.org", IRI_OPTION)), "uri://xn--rsum-bpad.example.org");  //not supported
+	strictEqual(URI.serialize(URI.parse("uri://r\xE9sum\xE9.example.org", {iri:true, domainHost:true}), {domainHost:true}), "uri://xn--rsum-bpad.example.org");
 });
 
 test("Convert URI to IRI", function () {
@@ -304,7 +304,7 @@ test("Convert URI to IRI", function () {
 	strictEqual(URI.serialize(URI.parse("uri://xn--99zt52a.example.org/%e2%80%ae"), IRI_OPTION), "uri://xn--99zt52a.example.org/%E2%80%AE");  //or uri://\u7D0D\u8C46.example.org/%E2%80%AE
 	
 	//Internationalized Domain Name conversion via punycode example from RFC 3987
-	//strictEqual(URI.serialize(URI.parse("uri://xn--rsum-bpad.example.org"), IRI_OPTION), "uri://r\xE9sum\xE9.example.org");  //not supported
+	strictEqual(URI.serialize(URI.parse("uri://xn--rsum-bpad.example.org", {domainHost:true}), {iri:true, domainHost:true}), "uri://r\xE9sum\xE9.example.org");
 });
 
 //
