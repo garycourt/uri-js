@@ -107,6 +107,28 @@ test("URI Parsing", function () {
 	strictEqual(components.path, "/one/two.three", "path");
 	strictEqual(components.query, "q1=a1&q2=a2", "query");
 	strictEqual(components.fragment, "body", "fragment");
+	
+	//IPv4address
+	components = URI.parse("//10.10.10.10/test");
+	strictEqual(components.errors.length, 0, "IPv4address errors");
+	strictEqual(components.scheme, undefined, "scheme");
+	strictEqual(components.userinfo, undefined, "userinfo");
+	strictEqual(components.host, "10.10.10.10", "host");
+	strictEqual(components.port, undefined, "port");
+	strictEqual(components.path, "/test", "path");
+	strictEqual(components.query, undefined, "query");
+	strictEqual(components.fragment, undefined, "fragment");
+	
+	//mixed IPv4address & reg-name, example from terion-name (https://github.com/garycourt/uri-js/issues/4)
+	components = URI.parse("uri://10.10.10.10.example.com/en/process");
+	strictEqual(components.errors.length, 0, "mixed errors");
+	strictEqual(components.scheme, "uri", "scheme");
+	strictEqual(components.userinfo, undefined, "userinfo");
+	strictEqual(components.host, "10.10.10.10.example.com", "host");
+	strictEqual(components.port, undefined, "port");
+	strictEqual(components.path, "/en/process", "path");
+	strictEqual(components.query, undefined, "query");
+	strictEqual(components.fragment, undefined, "fragment");
 });
 
 test("URI Serialization", function () {
