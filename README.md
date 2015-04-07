@@ -86,7 +86,7 @@ Currently, URI.js has built in support for the following schemes:
 *	urn \[[RFC 2141](http://www.ietf.org/rfc/rfc2141.txt)\]
 *	urn:uuid \[[RFC 4122](http://www.ietf.org/rfc/rfc4122.txt)\]
 
-## License
+## License ([Simplified BSD](http://en.wikipedia.org/wiki/BSD_licenses#2-clause))
 
 Copyright 2011 Gary Court. All rights reserved.
 
