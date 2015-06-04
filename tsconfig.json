@@ -1,0 +1,18 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "ES3",
+		"noImplicitAny": true,
+		"removeComments": false,
+		"preserveConstEnums": true,
+		"rootDir": "src",
+		"outDir": "build",
+		"sourceMap": false
+	},
+	"files": [
+		"src/uri.ts",
+		"src/schemes.ts",
+		"src/schemes/http.ts",
+		"src/schemes/urn.ts"
+	]
+}

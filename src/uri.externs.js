@@ -34,133 +34,63 @@
  * or implied, of Gary Court.
  */
 
-/*jslint white: true, sub: true, onevar: true, undef: true, eqeqeq: true, newcap: true, immed: true, indent: 4 */
+function URIComponents() {}
+URIComponents.prototype = {
+	scheme:"",
+	userinfo:"",
+	host:"",
+	port:0,
+	path:"",
+	query:"",
+	fragment:"",
+	reference:"",
+	error:""
+};
+
+function URIOptions() {}
+URIOptions.prototype = {
+	scheme:"",
+	reference:"",
+	tolerant:false,
+	absolutePath:false,
+	iri:false,
+	unicodeSupport:false,
+	domainHost:false
+};
+
+function URISchemeHandler() {} 
+URISchemeHandler.prototype = {
+	parse : function () {},
+	serialize : function () {},
+	unicodeSupport:false,
+	domainHost:false,
+	absolutePath:false
+};
 
 /**
- * @type {Object}
+ * @library
  */
 
-var exports = {};
+var URI = {
+	IRI_SUPPORT : false,
+	VALIDATE_SUPPORT : false,
+	pctEncChar : function () {},
+	pctDecChars : function () {},
+	SCHEMES : {},
+	parse : function () {},
+	_recomposeAuthority : function () {},
+	removeDotSegments : function () {},
+	serialize : function () {},
+	resolveComponents : function () {},
+	resolve : function () {},
+	normalize : function () {},
+	equal : function () {},
+	escapeComponent : function () {},
+	unescapeComponent : function () {}
+};
 
-/**
- * @param {string} id
- */
+var module = {
+	exports : {}
+};
 
 function require(id) {}
-
-/**
- * @interface 
- */
- 
-function Options() {}
-
-Options.prototype = {
-	/**
-	 * @type boolean
-	 */
-	
-	tolerant : false,
-	
-	/**
-	 * @type string
-	 */
-	
-	scheme : "",
-	
-	/**
-	 * @type string
-	 * @values "uri", "absolute", "relative", "same-document", "suffix"
-	 */
-	
-	reference : ""
-};
-
-/** 
- * @interface 
- */
- 
-function URIComponents() {}
-
-URIComponents.prototype = {
-	/**
-	 * @type string
-	 */
-	
-	scheme : "",
-	
-	/**
-	 * @type string
-	 */
-	
-	authority : "",
-	
-	/**
-	 * @type string
-	 */
-	
-	userinfo : "",
-	
-	/**
-	 * @type string
-	 */
-	
-	host : "",
-	
-	/**
-	 * @type number
-	 */
-	
-	port : 0,
-	
-	/**
-	 * @type string
-	 */
-	
-	path : "",
-	
-	/**
-	 * @type string
-	 */
-	
-	query : "",
-	
-	/**
-	 * @type string
-	 */
-	
-	fragment : "",
-	
-	/**
-	 * @type string
-	 * @values "uri", "absolute", "relative", "same-document"
-	 */
-	
-	reference : "",
-	
-	/**
-	 * @type Array
-	 */
-	
-	errors : []
-};
-
-		
-/** 
- * @interface 
- */
-
-function SchemeHandler() {}
-
-/**
- * @param {URIComponents} components
- * @param {Options} options
- */
-
-SchemeHandler.prototype.parse = function (components, options) {};
-
-/**
- * @param {URIComponents} components
- * @param {Options} options
- */
-
-SchemeHandler.prototype.serialize = function (components, options) {};

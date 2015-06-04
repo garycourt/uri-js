@@ -1,7 +1,8 @@
+///<reference path="../uri.ts"/>
+if (typeof COMPILED === "undefined" && typeof URI === "undefined" && typeof require === "function") URI = require("../uri");
+
 (function () {
-	var URI_NS = require("../uri"),
-		URI = URI_NS.URI,
-		pctEncChar = URI_NS.pctEncChar,
+	var pctEncChar = URI.pctEncChar,
 		NID$ = "(?:[0-9A-Za-z][0-9A-Za-z\\-]{1,31})",
 		PCT_ENCODED$ = "(?:\\%[0-9A-Fa-f]{2})",
 		TRANS$$ = "[0-9A-Za-z\\(\\)\\+\\,\\-\\.\\:\\=\\@\\;\\$\\_\\!\\*\\'\\/\\?\\#]",
@@ -14,13 +15,14 @@
 	
 	//RFC 2141
 	URI.SCHEMES["urn"] = {
-		parse : function (components, options) {
+		parse : function (components:URIComponents, options:URIOptions):URIComponents {
 			var matches = components.path.match(URN_PATH),
-				scheme, schemeHandler;
+				scheme:string, 
+				schemeHandler:URISchemeHandler;
 			
 			if (!matches) {
 				if (!options.tolerant) {
-					components.errors.push("URN is not strictly valid.");
+					components.error = components.error || "URN is not strictly valid.";
 				}
 				
 				matches = components.path.match(URN_PARSE);
@@ -33,28 +35,29 @@
 				//in order to serialize properly, 
 				//every URN must have a serializer that calls the URN serializer 
 				if (!schemeHandler) {
-					schemeHandler = URI.SCHEMES[scheme] = {};
-				}
-				if (!schemeHandler.serialize) {
-					schemeHandler.serialize = URI.SCHEMES["urn"].serialize;
+					//create fake scheme handler
+					schemeHandler = URI.SCHEMES[scheme] = {
+						parse : function (components:URIComponents, options:URIOptions):URIComponents {
+							return components;
+						},
+						serialize : URI.SCHEMES["urn"].serialize
+					};
 				}
 				
 				components.scheme = scheme;
 				components.path = matches[2];
 				
-				if (schemeHandler.parse) {
-					schemeHandler.parse(components, options);
-				}
+				components = schemeHandler.parse(components, options);
 			} else {
-				components.errors.push("URN can not be parsed.");
+				components.error = components.error || "URN can not be parsed.";
 			}
 	
 			return components;
 		},
 		
-		serialize : function (components, options) {
+		serialize : function (components:URIComponents, options:URIOptions):URIComponents {
 			var scheme = components.scheme || options.scheme,
-				matches;
+				matches:RegExpMatchArray;
 			
 			if (scheme && scheme !== "urn") {
 				var matches = scheme.match(URN_SCHEME);
@@ -73,13 +76,14 @@
 	
 	//RFC 4122
 	URI.SCHEMES["urn:uuid"] = {
-		parse : function (components, options) {
+		parse : function (components:URIComponents, options:URIOptions):URIComponents {
 			if (!options.tolerant && (!components.path || !components.path.match(UUID))) {
-				components.errors.push("UUID is not valid.");
+				components.error = components.error || "UUID is not valid.";
 			}
+			return components;
 		},
 		
-		serialize : function (components, options) {
+		serialize : function (components:URIComponents, options:URIOptions):URIComponents {
 			//ensure UUID is valid
 			if (!options.tolerant && (!components.path || !components.path.match(UUID))) {
 				//invalid UUIDs can not have this scheme

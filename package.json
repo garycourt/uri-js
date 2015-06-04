@@ -1,8 +1,46 @@
 {
-	"name" : "uri-js",
-	"version" : "1.4.3",
-	"description" : "An RFC 3986 compliant, scheme extendable URI parsing/validating/resolving library for JavaScript.",
-	"homepage" : "http://github.com/garycourt/uri-js",
-	"author" : "Gary Court <gary.court@gmail.com>",
-	"main" : "./src/uri.js"
+  "name": "uri-js",
+  "version": "2.0.0",
+  "description": "An RFC 3986/3987 compliant, scheme extendable URI/IRI parsing/validating/resolving library for JavaScript.",
+  "main": "build/uri.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+  	"setup": "grunt setup",
+  	"build": "grunt",
+    "test": "node_modules/.bin/mocha -u mocha-qunit-ui build/uri.js tests/tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/garycourt/uri-js"
+  },
+  "keywords": [
+    "URI",
+    "IRI",
+    "IDN",
+    "URN",
+    "RFC3986",
+    "RFC3987",
+    "RFC5891",
+    "RFC2616",
+    "RFC2818",
+    "RFC2141",
+    "RFC4122"
+  ],
+  "author": "Gary Court <gary.court@gmail.com>",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/garycourt/uri-js/issues"
+  },
+  "homepage": "https://github.com/garycourt/uri-js",
+  "devDependencies": {
+    "api-closure-compiler": "^1.0.5",
+    "grunt": "^0.4.5",
+    "grunt-closure-compiler-build": "^1.0.1",
+    "grunt-contrib-copy": "^0.8.0",
+    "grunt-typescript": "^0.6.2",
+    "mocha": "^2.2.5",
+    "mocha-qunit-ui": "^0.1.2"
+  }
 }
