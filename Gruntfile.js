@@ -8,7 +8,8 @@ module.exports = function(grunt) {
 					"src/uri.ts",
 					"src/schemes.ts",
 					"src/schemes/http.ts",
-					"src/schemes/urn.ts"
+					"src/schemes/urn.ts",
+					"src/schemes/mailto.ts"
 				],
 				dest : "build/",
 				options : {
@@ -35,6 +36,34 @@ module.exports = function(grunt) {
 			}
 		},
 		'closure-compiler' : {
+			'uri-iri' : {
+				closurePath : "dev/",
+				jar : "compiler.jar",
+				noreport : true,
+				js : [
+					"build/uri.js",
+					"build/punycode.js",
+					"build/schemes/http.js",
+					"build/schemes/urn.js",
+					"build/schemes/mailto.js"
+				],
+				jsOutputFile : "dev/null",
+				options : {
+					compilation_level : "ADVANCED",
+					externs : "src/uri.externs.js",
+					define : [
+						"COMPILED=true",
+						"URI__IRI_SUPPORT=true",
+						"URI__VALIDATE_SUPPORT=false"
+					],
+					module : [
+						"uriirimin:3",
+						"urnmin:1:uriirimin",
+						"mailtomin:1:uriirimin",
+					],
+					module_output_path_prefix : "dist/"
+				}
+			},
 			'uri' : {
 				closurePath : "dev/",
 				jar : "compiler.jar",
@@ -53,39 +82,15 @@ module.exports = function(grunt) {
 						"URI__VALIDATE_SUPPORT=false"
 					]
 				}
-			},
-			'uri-iri' : {
-				closurePath : "dev/",
-				jar : "compiler.jar",
-				noreport : true,
-				js : [
-					"build/uri.js",
-					"build/punycode.js",
-					"build/schemes/http.js"
-				],
-				jsOutputFile : "dist/uri-iri.min.js",
-				options : {
-					compilation_level : "ADVANCED",
-					externs : "src/uri.externs.js",
-					define : [
-						"COMPILED=true",
-						"URI__IRI_SUPPORT=true",
-						"URI__VALIDATE_SUPPORT=false"
-					]
-				}
-			},
-			'urn' : {
-				closurePath : "dev/",
-				jar : "compiler.jar",
-				noreport : true,
-				js : [
-					"build/schemes/urn.js"
-				],
-				jsOutputFile : "dist/schemes/urn.min.js",
-				options : {
-					compilation_level : "ADVANCED",
-					externs : "src/uri.externs.js"
-				}
+			}
+		},
+		rename : {
+			minified : {
+				files : [
+					{src:["dist/uriirimin.js"], dest:"dist/uri-iri.min.js"},
+					{src:["dist/urnmin.js"], dest:"dist/schemes/urn.min.js"},
+					{src:["dist/mailtomin.js"], dest:"dist/schemes/mailto.min.js"}
+				]
 			}
 		}
 	});
@@ -94,8 +99,9 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-copy');
 	grunt.loadNpmTasks('grunt-closure-compiler-build');
 	grunt.loadNpmTasks('api-closure-compiler');
+	grunt.loadNpmTasks('grunt-contrib-rename');
 
-	grunt.registerTask('default', ['typescript', 'copy', 'closure-compiler']);
+	grunt.registerTask('default', ['typescript', 'copy', 'closure-compiler', 'rename']);
 	grunt.registerTask('setup', ['closure-compiler-build']);
 
 };

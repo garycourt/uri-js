@@ -78,31 +78,40 @@ All of the above functions can accept an additional options argument that is an 
 
 ## Scheme Extendable
 
-URI.js supports inserting custom [scheme](http://en.wikipedia.org/wiki/URI_scheme) dependent processing rules. For example, here is the code for HTTP scheme normalization:
-
-	URI.SCHEMES["http"] = {
-		serialize : function (components, options) {
-			//normalize the default port
-			if (components.port === 80) {
-				components.port = undefined;
-			}
-			//normalize the empty path
-			if (!components.path) {
-				components.path = "/";
-			}
-			
-			return components;
-		}
-	};
-
-Currently, URI.js has built in support for the following schemes:
+URI.js supports inserting custom [scheme](http://en.wikipedia.org/wiki/URI_scheme) dependent processing rules. Currently, URI.js has built in support for the following schemes:
 
 *	http \[[RFC 2616](http://www.ietf.org/rfc/rfc2616.txt)\]
 *	https \[[RFC 2818](http://www.ietf.org/rfc/rfc2818.txt)\]
 *	urn \[[RFC 2141](http://www.ietf.org/rfc/rfc2141.txt)\]
 *	urn:uuid \[[RFC 4122](http://www.ietf.org/rfc/rfc4122.txt)\]
+*	mailto \[[RFC 6068](http://www.ietf.org/rfc/rfc6068.txt)\]
 
 Note: The minified version of URI.js only comes with http/https support compiled in.
+
+### HTTP Support
+
+	URI.equal("HTTP://ABC.COM:80", "http://abc.com/") === true
+
+### Mailto Support
+
+	URI.parse("mailto:alpha@example.com,bravo@example.com?subject=SUBSCRIBE&body=Sign%20me%20up!");
+	//returns:
+	//{
+	//	scheme : "mailto", 
+	//	to : ["alpha@example.com", "bravo@example.com"],
+	//	subject : "SUBSCRIBE",
+	//	body : "Sign me up!"
+	//}
+
+	URI.serialize({
+		scheme : "mailto", 
+		to : ["alpha@example.com"], 
+		subject : "REMOVE", 
+		body : "Please remove me",
+		headers : {
+			cc : "charlie@example.com"
+		}
+	}) === "mailto:alpha@example.com?cc=charlie@example.com&subject=REMOVE&body=Please%20remove%20me"
 
 ## Usage
 

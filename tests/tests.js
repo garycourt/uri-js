@@ -439,3 +439,138 @@ if (URI.SCHEMES["urn"]) {
 	});
 
 }
+
+//
+// Mailto
+//
+
+if (URI.SCHEMES["mailto"]) {
+
+	//module("Mailto");
+
+	test("Mailto Parse", function () {
+		var components;
+
+		//tests from RFC 6068
+
+		components = URI.parse("mailto:chris@example.com");
+		strictEqual(components.error, undefined, "error");
+		strictEqual(components.scheme, "mailto", "scheme");
+		strictEqual(components.userinfo, undefined, "userinfo");
+		strictEqual(components.host, undefined, "host");
+		strictEqual(components.port, undefined, "port");
+		strictEqual(components.path, undefined, "path");
+		strictEqual(components.query, undefined, "query");
+		strictEqual(components.fragment, undefined, "fragment");
+		deepEqual(components.to, ["chris@example.com"], "to");
+		strictEqual(components.subject, undefined, "subject");
+		strictEqual(components.body, undefined, "body");
+		strictEqual(components.headers, undefined, "headers");
+		
+		components = URI.parse("mailto:infobot@example.com?subject=current-issue");
+		deepEqual(components.to, ["infobot@example.com"], "to");
+		strictEqual(components.subject, "current-issue", "subject");
+
+		components = URI.parse("mailto:infobot@example.com?body=send%20current-issue");
+		deepEqual(components.to, ["infobot@example.com"], "to");
+		strictEqual(components.body, "send current-issue", "body");
+
+		components = URI.parse("mailto:infobot@example.com?body=send%20current-issue%0D%0Asend%20index");
+		deepEqual(components.to, ["infobot@example.com"], "to");
+		strictEqual(components.body, "send current-issue\x0D\x0Asend index", "body");
+
+		components = URI.parse("mailto:list@example.org?In-Reply-To=%3C3469A91.D10AF4C@example.com%3E");
+		deepEqual(components.to, ["list@example.org"], "to");
+		deepEqual(components.headers, {"In-Reply-To":"<3469A91.D10AF4C@example.com>"}, "headers");
+
+		components = URI.parse("mailto:majordomo@example.com?body=subscribe%20bamboo-l");
+		deepEqual(components.to, ["majordomo@example.com"], "to");
+		strictEqual(components.body, "subscribe bamboo-l", "body");
+
+		components = URI.parse("mailto:joe@example.com?cc=bob@example.com&body=hello");
+		deepEqual(components.to, ["joe@example.com"], "to");
+		strictEqual(components.body, "hello", "body");
+		deepEqual(components.headers, {"cc":"bob@example.com"}, "headers");
+
+		components = URI.parse("mailto:joe@example.com?cc=bob@example.com?body=hello");
+		if (URI.VALIDATE_SUPPORT) ok(components.error, "invalid header fields");
+
+		components = URI.parse("mailto:gorby%25kremvax@example.com");
+		deepEqual(components.to, ["gorby%kremvax@example.com"], "to gorby%kremvax@example.com");
+
+		components = URI.parse("mailto:unlikely%3Faddress@example.com?blat=foop");
+		deepEqual(components.to, ["unlikely?address@example.com"], "to unlikely?address@example.com");
+		deepEqual(components.headers, {"blat":"foop"}, "headers");
+		
+		components = URI.parse("mailto:Mike%26family@example.org");
+		deepEqual(components.to, ["Mike&family@example.org"], "to Mike&family@example.org");
+
+		components = URI.parse("mailto:%22not%40me%22@example.org");
+		deepEqual(components.to, ['"not@me"@example.org'], "to " + '"not@me"@example.org');
+
+		components = URI.parse("mailto:%22oh%5C%5Cno%22@example.org");
+		deepEqual(components.to, ['"oh\\\\no"@example.org'], "to " + '"oh\\\\no"@example.org');
+
+		components = URI.parse("mailto:%22%5C%5C%5C%22it's%5C%20ugly%5C%5C%5C%22%22@example.org");
+		deepEqual(components.to, ['"\\\\\\"it\'s\\ ugly\\\\\\""@example.org'], "to " + '"\\\\\\"it\'s\\ ugly\\\\\\""@example.org');
+
+		components = URI.parse("mailto:user@example.org?subject=caf%C3%A9");
+		deepEqual(components.to, ["user@example.org"], "to");
+		strictEqual(components.subject, "caf\xE9", "subject");
+
+		components = URI.parse("mailto:user@example.org?subject=%3D%3Futf-8%3FQ%3Fcaf%3DC3%3DA9%3F%3D");
+		deepEqual(components.to, ["user@example.org"], "to");
+		strictEqual(components.subject, "=?utf-8?Q?caf=C3=A9?=", "subject");  //TODO: Verify this
+
+		components = URI.parse("mailto:user@example.org?subject=%3D%3Fiso-8859-1%3FQ%3Fcaf%3DE9%3F%3D");
+		deepEqual(components.to, ["user@example.org"], "to");
+		strictEqual(components.subject, "=?iso-8859-1?Q?caf=E9?=", "subject");  //TODO: Verify this
+
+		components = URI.parse("mailto:user@example.org?subject=caf%C3%A9&body=caf%C3%A9");
+		deepEqual(components.to, ["user@example.org"], "to");
+		strictEqual(components.subject, "caf\xE9", "subject");
+		strictEqual(components.body, "caf\xE9", "body");
+
+		if (URI.IRI_SUPPORT) {
+			components = URI.parse("mailto:user@%E7%B4%8D%E8%B1%86.example.org?subject=Test&body=NATTO");
+			deepEqual(components.to, ["user@xn--99zt52a.example.org"], "to");
+			strictEqual(components.subject, "Test", "subject");
+			strictEqual(components.body, "NATTO", "body");
+		}
+
+	});
+
+	test("Mailto Serialize", function () {
+		var components;
+
+		//tests from RFC 6068
+		strictEqual(URI.serialize({scheme : "mailto", to : ["chris@example.com"]}), "mailto:chris@example.com");
+		strictEqual(URI.serialize({scheme : "mailto", to : ["infobot@example.com"], body : "current-issue"}), "mailto:infobot@example.com?body=current-issue");
+		strictEqual(URI.serialize({scheme : "mailto", to : ["infobot@example.com"], body : "send current-issue"}), "mailto:infobot@example.com?body=send%20current-issue");
+		strictEqual(URI.serialize({scheme : "mailto", to : ["infobot@example.com"], body : "send current-issue\x0D\x0Asend index"}), "mailto:infobot@example.com?body=send%20current-issue%0D%0Asend%20index");
+		strictEqual(URI.serialize({scheme : "mailto", to : ["list@example.org"], headers : {"In-Reply-To" : "<3469A91.D10AF4C@example.com>"}}), "mailto:list@example.org?In-Reply-To=%3C3469A91.D10AF4C@example.com%3E");
+		strictEqual(URI.serialize({scheme : "mailto", to : ["majordomo@example.com"], body : "subscribe bamboo-l"}), "mailto:majordomo@example.com?body=subscribe%20bamboo-l");
+		strictEqual(URI.serialize({scheme : "mailto", to : ["joe@example.com"], headers : {"cc" : "bob@example.com", "body" : "hello"}}), "mailto:joe@example.com?cc=bob@example.com&body=hello");
+		strictEqual(URI.serialize({scheme : "mailto", to : ["gorby%25kremvax@example.com"]}), "mailto:gorby%25kremvax@example.com");
+		strictEqual(URI.serialize({scheme : "mailto", to : ["unlikely%3Faddress@example.com"], headers : {"blat" : "foop"}}), "mailto:unlikely%3Faddress@example.com?blat=foop");
+		strictEqual(URI.serialize({scheme : "mailto", to : ["Mike&family@example.org"]}), "mailto:Mike%26family@example.org");
+		strictEqual(URI.serialize({scheme : "mailto", to : ['"not@me"@example.org']}), "mailto:%22not%40me%22@example.org");
+		strictEqual(URI.serialize({scheme : "mailto", to : ['"oh\\\\no"@example.org']}), "mailto:%22oh%5C%5Cno%22@example.org");
+		strictEqual(URI.serialize({scheme : "mailto", to : ['"\\\\\\"it\'s\\ ugly\\\\\\""@example.org']}), "mailto:%22%5C%5C%5C%22it's%5C%20ugly%5C%5C%5C%22%22@example.org");
+		strictEqual(URI.serialize({scheme : "mailto", to : ["user@example.org"], subject : "caf\xE9"}), "mailto:user@example.org?subject=caf%C3%A9");
+		strictEqual(URI.serialize({scheme : "mailto", to : ["user@example.org"], subject : "=?utf-8?Q?caf=C3=A9?="}), "mailto:user@example.org?subject=%3D%3Futf-8%3FQ%3Fcaf%3DC3%3DA9%3F%3D");
+		strictEqual(URI.serialize({scheme : "mailto", to : ["user@example.org"], subject : "=?iso-8859-1?Q?caf=E9?="}), "mailto:user@example.org?subject=%3D%3Fiso-8859-1%3FQ%3Fcaf%3DE9%3F%3D");
+		strictEqual(URI.serialize({scheme : "mailto", to : ["user@example.org"], subject : "caf\xE9", body : "caf\xE9"}), "mailto:user@example.org?subject=caf%C3%A9&body=caf%C3%A9");
+		if (URI.IRI_SUPPORT) {
+			strictEqual(URI.serialize({scheme : "mailto", to : ["us\xE9r@\u7d0d\u8c46.example.org"], subject : "Test", body : "NATTO"}), "mailto:us%C3%A9r@xn--99zt52a.example.org?subject=Test&body=NATTO");
+		}
+
+	});
+
+	test("Mailto Equals", function () {
+		//tests from RFC 6068
+		strictEqual(URI.equal("mailto:addr1@an.example,addr2@an.example", "mailto:?to=addr1@an.example,addr2@an.example"), true);
+		strictEqual(URI.equal("mailto:?to=addr1@an.example,addr2@an.example", "mailto:addr1@an.example?to=addr2@an.example"), true);
+	});
+
+}

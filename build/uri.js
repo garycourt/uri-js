@@ -154,15 +154,15 @@ var URI = (function () {
         if (components.scheme)
             components.scheme = String(components.scheme).replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.NOT_SCHEME, "");
         if (components.userinfo !== undefined)
-            components.userinfo = String(components.userinfo).replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_USERINFO, pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, toUpperCase);
+            components.userinfo = String(components.userinfo).replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_USERINFO, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
         if (components.host !== undefined)
-            components.host = String(components.host).replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.NOT_HOST, pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, toUpperCase);
+            components.host = String(components.host).replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.NOT_HOST, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
         if (components.path !== undefined)
-            components.path = String(components.path).replace(protocol.PCT_ENCODED, decodeUnreserved).replace((components.scheme ? protocol.NOT_PATH : protocol.NOT_PATH_NOSCHEME), pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, toUpperCase);
+            components.path = String(components.path).replace(protocol.PCT_ENCODED, decodeUnreserved).replace((components.scheme ? protocol.NOT_PATH : protocol.NOT_PATH_NOSCHEME), pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
         if (components.query !== undefined)
-            components.query = String(components.query).replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_QUERY, pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, toUpperCase);
+            components.query = String(components.query).replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_QUERY, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
         if (components.fragment !== undefined)
-            components.fragment = String(components.fragment).replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_FRAGMENT, pctEncChar).replace(/%[0-9A-Fa-f]{2}/g, toUpperCase);
+            components.fragment = String(components.fragment).replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_FRAGMENT, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
         return components;
     }
     ;
@@ -225,7 +225,7 @@ var URI = (function () {
                 }
             }
             //determine reference type
-            if (components.scheme === undefined && components.userinfo === undefined && components.host === undefined && components.port === undefined && components.path === undefined && components.query === undefined) {
+            if (components.scheme === undefined && components.userinfo === undefined && components.host === undefined && components.port === undefined && !components.path && components.query === undefined) {
                 components.reference = "same-document";
             }
             else if (components.scheme === undefined) {
@@ -244,7 +244,7 @@ var URI = (function () {
             //find scheme handler
             schemeHandler = SCHEMES[(options.scheme || components.scheme || "").toLowerCase()];
             //check if scheme can't handle IRIs
-            if (URI__IRI_SUPPORT && !options.unicodeSupport && (!schemeHandler || !schemeHandler.unicodeSupport)) {
+            if (URI__IRI_SUPPORT && typeof punycode !== "undefined" && !options.unicodeSupport && (!schemeHandler || !schemeHandler.unicodeSupport)) {
                 //if host component is a domain name
                 if (components.host && (options.domainHost || (schemeHandler && schemeHandler.domainHost))) {
                     //convert Unicode IDN -> ASCII IDN
@@ -324,7 +324,7 @@ var URI = (function () {
         if (schemeHandler && schemeHandler.serialize)
             schemeHandler.serialize(components, options);
         //if host component is a domain name
-        if (URI__IRI_SUPPORT && components.host && (options.domainHost || (schemeHandler && schemeHandler.domainHost))) {
+        if (URI__IRI_SUPPORT && typeof punycode !== "undefined" && components.host && (options.domainHost || (schemeHandler && schemeHandler.domainHost))) {
             //convert IDN via punycode
             try {
                 components.host = (!options.iri ? punycode.toASCII(components.host.replace(protocol.PCT_ENCODED, pctDecChars).toLowerCase()) : punycode.toUnicode(components.host));

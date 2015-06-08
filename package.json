@@ -1,14 +1,14 @@
 {
   "name": "uri-js",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "An RFC 3986/3987 compliant, scheme extendable URI/IRI parsing/validating/resolving library for JavaScript.",
   "main": "build/uri.js",
   "directories": {
     "test": "tests"
   },
   "scripts": {
-  	"setup": "grunt setup",
-  	"build": "grunt",
+    "setup": "grunt setup",
+    "build": "grunt",
     "test": "node_modules/.bin/mocha -u mocha-qunit-ui build/uri.js tests/tests.js"
   },
   "repository": {
@@ -20,13 +20,17 @@
     "IRI",
     "IDN",
     "URN",
+    "HTTP",
+    "HTTPS",
+    "MAILTO",
     "RFC3986",
     "RFC3987",
     "RFC5891",
     "RFC2616",
     "RFC2818",
     "RFC2141",
-    "RFC4122"
+    "RFC4122",
+    "RFC6068"
   ],
   "author": "Gary Court <gary.court@gmail.com>",
   "license": "BSD",
@@ -39,6 +43,7 @@
     "grunt": "^0.4.5",
     "grunt-closure-compiler-build": "^1.0.1",
     "grunt-contrib-copy": "^0.8.0",
+    "grunt-contrib-rename": "0.0.3",
     "grunt-typescript": "^0.6.2",
     "mocha": "^2.2.5",
     "mocha-qunit-ui": "^0.1.2"

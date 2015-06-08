@@ -94,3 +94,11 @@ var module = {
 };
 
 function require(id) {}
+
+function MailtoComponents() {}
+MailtoComponents.prototype = {
+	to:[],
+	headers:{},
+	subject:"",
+	body:""
+};

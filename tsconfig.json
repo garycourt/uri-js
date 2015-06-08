@@ -13,6 +13,7 @@
 		"src/uri.ts",
 		"src/schemes.ts",
 		"src/schemes/http.ts",
-		"src/schemes/urn.ts"
+		"src/schemes/urn.ts",
+		"src/schemes/mailto.ts"
 	]
 }
