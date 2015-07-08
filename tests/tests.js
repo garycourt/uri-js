@@ -4,6 +4,10 @@
 //
 //
 
+if (typeof URI === "undefined") {
+	var URI = require("../build/uri");
+}
+
 test("Acquire URI", function () {
 	//URI = require("./uri").URI;
 	ok(URI);

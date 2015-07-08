@@ -1,6 +1,6 @@
 {
   "name": "uri-js",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "An RFC 3986/3987 compliant, scheme extendable URI/IRI parsing/validating/resolving library for JavaScript.",
   "main": "build/uri.js",
   "directories": {

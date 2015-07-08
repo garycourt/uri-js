@@ -492,7 +492,7 @@ var URI = (function () {
     };
 })();
 if (!COMPILED && typeof module !== "undefined" && typeof require === "function") {
-    punycode = require("./punycode");
+    var punycode = require("./punycode");
     module.exports = URI;
     require("./schemes");
 }

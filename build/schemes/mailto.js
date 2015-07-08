@@ -1,7 +1,6 @@
 ///<reference path="../uri.ts"/>
 if (typeof COMPILED === "undefined" && typeof URI === "undefined" && typeof require === "function") {
-    URI = require("../uri");
-    punycode = require("../punycode");
+    var URI = require("../uri"), punycode = require("../punycode");
 }
 (function () {
     function merge() {

@@ -1,6 +1,6 @@
 ///<reference path="../uri.ts"/>
 if (typeof COMPILED === "undefined" && typeof URI === "undefined" && typeof require === "function")
-    URI = require("../uri");
+    var URI = require("../uri");
 URI.SCHEMES["http"] = URI.SCHEMES["https"] = {
     domainHost: true,
     parse: function (components, options) {
