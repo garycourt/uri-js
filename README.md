@@ -135,7 +135,7 @@ Then, in your code, load it using:
 
 The `errors` array on parsed components as now been changed to an `error` string.
 
-## License
+## License ([Simplified BSD](http://en.wikipedia.org/wiki/BSD_licenses#2-clause))
 
 Copyright 2011 Gary Court. All rights reserved.
 
