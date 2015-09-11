@@ -3,7 +3,7 @@
  * 
  * http://docs.jquery.com/QUnit
  *
- * Copyright (c) 2009 John Resig, Jörn Zaefferer
+ * Copyright (c) 2009 John Resig, JÃ¶rn Zaefferer
  * Dual licensed under the MIT (MIT-LICENSE.txt)
  * and GPL (GPL-LICENSE.txt) licenses.
  */
@@ -674,7 +674,7 @@ function id(name) {
 // Test for equality any JavaScript type.
 // Discussions and reference: http://philrathe.com/articles/equiv
 // Test suites: http://philrathe.com/tests/equiv
-// Author: Philippe Rathé <prathe@gmail.com>
+// Author: Philippe RathÃ© <prathe@gmail.com>
 QUnit.equiv = function () {
 
     var innerEquiv; // the real equiv function
