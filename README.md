@@ -40,9 +40,9 @@ URI.js weighs in at only 2.3kb (gzipped, 7kb deflated). Need IRI support? It's o
 ### IRI Support
 
 	//convert IRI to URI
-	URI.serialize(URI.parse("http://examplé.org/rosé")) === "http://xn--exampl-gva.org/ros%C3%A9"
+	URI.serialize(URI.parse("http://examplÃ©.org/rosÃ©")) === "http://xn--exampl-gva.org/ros%C3%A9"
 	//convert URI to IRI
-	URI.serialize(URI.parse("http://xn--exampl-gva.org/ros%C3%A9"), {iri:true}) === "http://examplé.org/rosé"
+	URI.serialize(URI.parse("http://xn--exampl-gva.org/ros%C3%A9"), {iri:true}) === "http://examplÃ©.org/rosÃ©"
 
 ### Options
 
