@@ -180,7 +180,7 @@ var URI = (function () {
 			URI_REF : URI__VALIDATE_SUPPORT && new RegExp("(" + GENERIC_REF$ + ")|(" + RELATIVE_REF$ + ")"),
 			NOT_SCHEME : new RegExp(merge("[^]", ALPHA$$, DIGIT$$, "[\\+\\-\\.]"), "g"),
 			NOT_USERINFO : new RegExp(merge("[^\\%\\:]", UNRESERVED$$, SUB_DELIMS$$), "g"),
-			NOT_HOST : new RegExp(merge("[^\\%]", UNRESERVED$$, SUB_DELIMS$$), "g"),
+			NOT_HOST : new RegExp(merge("[^\\%\\[\\]:]", UNRESERVED$$, SUB_DELIMS$$), "g"),
 			NOT_PATH : new RegExp(merge("[^\\%\\/\\:\\@]", UNRESERVED$$, SUB_DELIMS$$), "g"),
 			NOT_PATH_NOSCHEME : new RegExp(merge("[^\\%\\/\\@]", UNRESERVED$$, SUB_DELIMS$$), "g"),
 			NOT_QUERY : new RegExp(merge("[^\\%]", UNRESERVED$$, SUB_DELIMS$$, "[\\:\\@\\/\\?]", IPRIVATE$$), "g"),
