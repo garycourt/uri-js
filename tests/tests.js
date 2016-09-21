@@ -123,6 +123,18 @@ test("URI Parsing", function () {
 	strictEqual(components.query, undefined, "query");
 	strictEqual(components.fragment, undefined, "fragment");
 	
+	//IPv6address
+	components = URI.parse("//[2606:2800:220:1:248:1893:25c8:1946]/test");
+	strictEqual(components.error, undefined, "IPv6address errors");
+	strictEqual(components.scheme, undefined, "scheme");
+	strictEqual(components.userinfo, undefined, "userinfo");
+	strictEqual(components.host, "[2606:2800:220:1:248:1893:25c8:1946]", "host");
+	strictEqual(components.port, undefined, "port");
+	strictEqual(components.path, "/test", "path");
+	strictEqual(components.query, undefined, "query");
+	strictEqual(components.fragment, undefined, "fragment");
+	
+	
 	//mixed IPv4address & reg-name, example from terion-name (https://github.com/garycourt/uri-js/issues/4)
 	components = URI.parse("uri://10.10.10.10.example.com/en/process");
 	strictEqual(components.error, undefined, "mixed errors");
@@ -236,6 +248,7 @@ test("URI Resolving", function () {
 test("URI Normalizing", function () {
 	//test from RFC 3987
 	strictEqual(URI.normalize("uri://www.example.org/red%09ros\xE9#red"), "uri://www.example.org/red%09ros%C3%A9#red");
+	strictEqual(URI.normalize("http://[2001:1900:3001:11::2c]/"), "http://[2001:1900:3001:11::2c]/");
 });
 
 test("URI Equals", function () {
