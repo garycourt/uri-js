@@ -76,7 +76,8 @@ interface URIOptions {
 	absolutePath?:boolean,
 	iri?:boolean,
 	unicodeSupport?:boolean,
-	domainHost?:boolean
+	domainHost?:boolean,
+	validate?:boolean
 }
 
 interface URISchemeHandler {
@@ -297,7 +298,7 @@ var URI = (function () {
 		
 		if (options.reference === "suffix") uriString = (options.scheme ? options.scheme + ":" : "") + "//" + uriString;
 		
-		if (URI__VALIDATE_SUPPORT) {
+		if (URI__VALIDATE_SUPPORT && !!options.validate) {
 			matches = uriString.match(protocol.URI_REF);
 
 			if (matches) {
