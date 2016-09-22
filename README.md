@@ -76,6 +76,10 @@ All of the above functions can accept an additional options argument that is an 
 	
 	If set to `true`, the library will treat the `host` component as a domain name, and convert IDNs (International Domain Names) as per [RFC 5891](http://www.ietf.org/rfc/rfc5891.txt).
 
+*	`validate` (boolean, true)
+	
+	If set to `false`, the parser will use simpler regular expressions. This can be useful to speed up parsing of very long urls. It implies the option `tolerant`.
+
 ## Scheme Extendable
 
 URI.js supports inserting custom [scheme](http://en.wikipedia.org/wiki/URI_scheme) dependent processing rules. Currently, URI.js has built in support for the following schemes:
