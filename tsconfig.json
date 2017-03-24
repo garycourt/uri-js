@@ -1,19 +1,20 @@
 {
-	"compilerOptions": {
-		"module": "commonjs",
-		"target": "ES3",
-		"noImplicitAny": true,
-		"removeComments": false,
-		"preserveConstEnums": true,
-		"rootDir": "src",
-		"outDir": "build",
-		"sourceMap": false
-	},
-	"files": [
-		"src/uri.ts",
-		"src/schemes.ts",
-		"src/schemes/http.ts",
-		"src/schemes/urn.ts",
-		"src/schemes/mailto.ts"
-	]
+    "compilerOptions": {
+        "module": "es2015",
+        "target": "esnext",
+        "noImplicitAny": true,
+        "sourceMap": true,
+        "alwaysStrict": true,
+        "declaration": true,
+        "experimentalDecorators": true,
+        "forceConsistentCasingInFileNames": true,
+        "importHelpers": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "outDir": "dist/esnext",
+        "strictNullChecks": true
+    },
+    "include": [
+        "src/**/*"
+    ]
 }

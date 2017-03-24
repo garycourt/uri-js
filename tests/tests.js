@@ -5,7 +5,7 @@
 //
 
 if (typeof URI === "undefined") {
-	var URI = require("../build/uri");
+	var URI = require("../dist/es5/uri.all");
 }
 
 test("Acquire URI", function () {
@@ -15,7 +15,7 @@ test("Acquire URI", function () {
 
 test("URI Parsing", function () {
 	var components;
-	
+
 	//scheme
 	components = URI.parse("uri:");
 	strictEqual(components.error, undefined, "scheme errors");
@@ -27,7 +27,7 @@ test("URI Parsing", function () {
 	strictEqual(components.path, "", "path");
 	strictEqual(components.query, undefined, "query");
 	strictEqual(components.fragment, undefined, "fragment");
-	
+
 	//userinfo
 	components = URI.parse("//@");
 	strictEqual(components.error, undefined, "userinfo errors");
@@ -39,7 +39,7 @@ test("URI Parsing", function () {
 	strictEqual(components.path, "", "path");
 	strictEqual(components.query, undefined, "query");
 	strictEqual(components.fragment, undefined, "fragment");
-	
+
 	//host
 	components = URI.parse("//");
 	strictEqual(components.error, undefined, "host errors");
@@ -51,7 +51,7 @@ test("URI Parsing", function () {
 	strictEqual(components.path, "", "path");
 	strictEqual(components.query, undefined, "query");
 	strictEqual(components.fragment, undefined, "fragment");
-	
+
 	//port
 	components = URI.parse("//:");
 	strictEqual(components.error, undefined, "port errors");
@@ -63,7 +63,7 @@ test("URI Parsing", function () {
 	strictEqual(components.path, "", "path");
 	strictEqual(components.query, undefined, "query");
 	strictEqual(components.fragment, undefined, "fragment");
-	
+
 	//path
 	components = URI.parse("");
 	strictEqual(components.error, undefined, "path errors");
@@ -75,7 +75,7 @@ test("URI Parsing", function () {
 	strictEqual(components.path, "", "path");
 	strictEqual(components.query, undefined, "query");
 	strictEqual(components.fragment, undefined, "fragment");
-	
+
 	//query
 	components = URI.parse("?");
 	strictEqual(components.error, undefined, "query errors");
@@ -87,7 +87,7 @@ test("URI Parsing", function () {
 	strictEqual(components.path, "", "path");
 	strictEqual(components.query, "", "query");
 	strictEqual(components.fragment, undefined, "fragment");
-	
+
 	//fragment
 	components = URI.parse("#");
 	strictEqual(components.error, undefined, "fragment errors");
@@ -99,7 +99,7 @@ test("URI Parsing", function () {
 	strictEqual(components.path, "", "path");
 	strictEqual(components.query, undefined, "query");
 	strictEqual(components.fragment, "", "fragment");
-	
+
 	//all
 	components = URI.parse("uri://user:pass@example.com:123/one/two.three?q1=a1&q2=a2#body");
 	strictEqual(components.error, undefined, "all errors");
@@ -111,18 +111,40 @@ test("URI Parsing", function () {
 	strictEqual(components.path, "/one/two.three", "path");
 	strictEqual(components.query, "q1=a1&q2=a2", "query");
 	strictEqual(components.fragment, "body", "fragment");
-	
+
 	//IPv4address
-	components = URI.parse("//10.10.10.10/test");
+	components = URI.parse("//10.10.10.10");
 	strictEqual(components.error, undefined, "IPv4address errors");
 	strictEqual(components.scheme, undefined, "scheme");
 	strictEqual(components.userinfo, undefined, "userinfo");
 	strictEqual(components.host, "10.10.10.10", "host");
 	strictEqual(components.port, undefined, "port");
-	strictEqual(components.path, "/test", "path");
+	strictEqual(components.path, "", "path");
 	strictEqual(components.query, undefined, "query");
 	strictEqual(components.fragment, undefined, "fragment");
-	
+
+	//IPv6address
+	components = URI.parse("//[2001:db8::7]");
+	strictEqual(components.error, undefined, "IPv4address errors");
+	strictEqual(components.scheme, undefined, "scheme");
+	strictEqual(components.userinfo, undefined, "userinfo");
+	strictEqual(components.host, "2001:db8::7", "host");
+	strictEqual(components.port, undefined, "port");
+	strictEqual(components.path, "", "path");
+	strictEqual(components.query, undefined, "query");
+	strictEqual(components.fragment, undefined, "fragment");
+
+	//mixed IPv4address & IPv6address
+	components = URI.parse("//[::ffff:129.144.52.38]");
+	strictEqual(components.error, undefined, "IPv4address errors");
+	strictEqual(components.scheme, undefined, "scheme");
+	strictEqual(components.userinfo, undefined, "userinfo");
+	strictEqual(components.host, "::ffff:129.144.52.38", "host");
+	strictEqual(components.port, undefined, "port");
+	strictEqual(components.path, "", "path");
+	strictEqual(components.query, undefined, "query");
+	strictEqual(components.fragment, undefined, "fragment");
+
 	//mixed IPv4address & reg-name, example from terion-name (https://github.com/garycourt/uri-js/issues/4)
 	components = URI.parse("uri://10.10.10.10.example.com/en/process");
 	strictEqual(components.error, undefined, "mixed errors");
@@ -131,6 +153,17 @@ test("URI Parsing", function () {
 	strictEqual(components.host, "10.10.10.10.example.com", "host");
 	strictEqual(components.port, undefined, "port");
 	strictEqual(components.path, "/en/process", "path");
+	strictEqual(components.query, undefined, "query");
+	strictEqual(components.fragment, undefined, "fragment");
+
+	//IPv6address, example from bkw (https://github.com/garycourt/uri-js/pull/16)
+	components = URI.parse("//[2606:2800:220:1:248:1893:25c8:1946]/test");
+	strictEqual(components.error, undefined, "IPv6address errors");
+	strictEqual(components.scheme, undefined, "scheme");
+	strictEqual(components.userinfo, undefined, "userinfo");
+	strictEqual(components.host, "2606:2800:220:1:248:1893:25c8:1946", "host");
+	strictEqual(components.port, undefined, "port");
+	strictEqual(components.path, "/test", "path");
 	strictEqual(components.query, undefined, "query");
 	strictEqual(components.fragment, undefined, "fragment");
 });
@@ -146,7 +179,7 @@ test("URI Serialization", function () {
 		fragment : undefined
 	};
 	strictEqual(URI.serialize(components), "", "Undefined Components");
-	
+
 	components = {
 		scheme : "",
 		userinfo : "",
@@ -157,7 +190,7 @@ test("URI Serialization", function () {
 		fragment : ""
 	};
 	strictEqual(URI.serialize(components), "//@:0?#", "Empty Components");
-	
+
 	components = {
 		scheme : "uri",
 		userinfo : "foo:bar",
@@ -168,7 +201,7 @@ test("URI Serialization", function () {
 		fragment : "fragment"
 	};
 	strictEqual(URI.serialize(components), "uri://foo:bar@example.com:1/path?query#fragment", "All Components");
-	
+
 	strictEqual(URI.serialize({path:"//path"}), "/%2Fpath", "Double slash path");
 	strictEqual(URI.serialize({path:"foo:bar"}), "foo%3Abar", "Colon path");
 	strictEqual(URI.serialize({path:"?query"}), "%3Fquery", "Query path");
@@ -201,33 +234,33 @@ test("URI Resolving", function () {
 	strictEqual(URI.resolve(base, "../.."), "uri://a/", "../..");
 	strictEqual(URI.resolve(base, "../../"), "uri://a/", "../../");
 	strictEqual(URI.resolve(base, "../../g"), "uri://a/g", "../../g");
-	
+
 	//abnormal examples from RFC 3986
 	strictEqual(URI.resolve(base, "../../../g"), "uri://a/g", "../../../g");
 	strictEqual(URI.resolve(base, "../../../../g"), "uri://a/g", "../../../../g");
-	
+
 	strictEqual(URI.resolve(base, "/./g"), "uri://a/g", "/./g");
 	strictEqual(URI.resolve(base, "/../g"), "uri://a/g", "/../g");
 	strictEqual(URI.resolve(base, "g."), "uri://a/b/c/g.", "g.");
 	strictEqual(URI.resolve(base, ".g"), "uri://a/b/c/.g", ".g");
 	strictEqual(URI.resolve(base, "g.."), "uri://a/b/c/g..", "g..");
 	strictEqual(URI.resolve(base, "..g"), "uri://a/b/c/..g", "..g");
-      
+
 	strictEqual(URI.resolve(base, "./../g"), "uri://a/b/g", "./../g");
 	strictEqual(URI.resolve(base, "./g/."), "uri://a/b/c/g/", "./g/.");
 	strictEqual(URI.resolve(base, "g/./h"), "uri://a/b/c/g/h", "g/./h");
 	strictEqual(URI.resolve(base, "g/../h"), "uri://a/b/c/h", "g/../h");
 	strictEqual(URI.resolve(base, "g;x=1/./y"), "uri://a/b/c/g;x=1/y", "g;x=1/./y");
 	strictEqual(URI.resolve(base, "g;x=1/../y"), "uri://a/b/c/y", "g;x=1/../y");
-      
+
 	strictEqual(URI.resolve(base, "g?y/./x"), "uri://a/b/c/g?y/./x", "g?y/./x");
 	strictEqual(URI.resolve(base, "g?y/../x"), "uri://a/b/c/g?y/../x", "g?y/../x");
 	strictEqual(URI.resolve(base, "g#s/./x"), "uri://a/b/c/g#s/./x", "g#s/./x");
 	strictEqual(URI.resolve(base, "g#s/../x"), "uri://a/b/c/g#s/../x", "g#s/../x");
-      
+
 	strictEqual(URI.resolve(base, "uri:g"), "uri:g", "uri:g");
 	strictEqual(URI.resolve(base, "uri:g", {tolerant:true}), "uri://a/b/c/g", "uri:g");
-    
+
 	//examples by PAEz
 	strictEqual(URI.resolve("//www.g.com/","/adf\ngf"), "//www.g.com/adf%0Agf", "/adf\\ngf");
 	strictEqual(URI.resolve("//www.g.com/error\n/bleh/bleh",".."), "//www.g.com/error%0A/", "//www.g.com/error\\n/bleh/bleh");
@@ -236,12 +269,15 @@ test("URI Resolving", function () {
 test("URI Normalizing", function () {
 	//test from RFC 3987
 	strictEqual(URI.normalize("uri://www.example.org/red%09ros\xE9#red"), "uri://www.example.org/red%09ros%C3%A9#red");
+
+	//IPv6address, example from RFC 3513
+	strictEqual(URI.normalize("http://[1080::8:800:200C:417A]/"), "http://[1080::8:800:200c:417a]/");
 });
 
 test("URI Equals", function () {
 	//test from RFC 3986
 	strictEqual(URI.equal("example://a/b/c/%7Bfoo%7D", "eXAMPLE://a/./b/../b/%63/%7bfoo%7d"), true);
-	
+
 	//test from RFC 3987
 	strictEqual(URI.equal("http://example.org/~user", "http://example.org/%7euser"), true);
 });
@@ -278,64 +314,62 @@ test("Unescape Component", function () {
 // IRI
 //
 
-if (URI.IRI_SUPPORT) {
 
-	var IRI_OPTION = { iri : true, unicodeSupport : true };
 
-	test("IRI Parsing", function () {
-		var components = URI.parse("uri://us\xA0er:pa\uD7FFss@example.com:123/o\uF900ne/t\uFDCFwo.t\uFDF0hree?q1=a1\uF8FF\uE000&q2=a2#bo\uFFEFdy", IRI_OPTION);
-		strictEqual(components.error, undefined, "all errors");
-		strictEqual(components.scheme, "uri", "scheme");
-		//strictEqual(components.authority, "us\xA0er:pa\uD7FFss@example.com:123", "authority");
-		strictEqual(components.userinfo, "us\xA0er:pa\uD7FFss", "userinfo");
-		strictEqual(components.host, "example.com", "host");
-		strictEqual(components.port, 123, "port");
-		strictEqual(components.path, "/o\uF900ne/t\uFDCFwo.t\uFDF0hree", "path");
-		strictEqual(components.query, "q1=a1\uF8FF\uE000&q2=a2", "query");
-		strictEqual(components.fragment, "bo\uFFEFdy", "fragment");
-	});
+var IRI_OPTION = { iri : true, unicodeSupport : true };
 
-	test("IRI Serialization", function () {
-		var components = {
-			scheme : "uri",
-			userinfo : "us\xA0er:pa\uD7FFss",
-			host : "example.com",
-			port : 123,
-			path : "/o\uF900ne/t\uFDCFwo.t\uFDF0hree",
-			query : "q1=a1\uF8FF\uE000&q2=a2",
-			fragment : "bo\uFFEFdy\uE001"
-		};
-		strictEqual(URI.serialize(components, IRI_OPTION), "uri://us\xA0er:pa\uD7FFss@example.com:123/o\uF900ne/t\uFDCFwo.t\uFDF0hree?q1=a1\uF8FF\uE000&q2=a2#bo\uFFEFdy%EE%80%81");
-	});
+test("IRI Parsing", function () {
+	var components = URI.parse("uri://us\xA0er:pa\uD7FFss@example.com:123/o\uF900ne/t\uFDCFwo.t\uFDF0hree?q1=a1\uF8FF\uE000&q2=a2#bo\uFFEFdy", IRI_OPTION);
+	strictEqual(components.error, undefined, "all errors");
+	strictEqual(components.scheme, "uri", "scheme");
+	//strictEqual(components.authority, "us\xA0er:pa\uD7FFss@example.com:123", "authority");
+	strictEqual(components.userinfo, "us\xA0er:pa\uD7FFss", "userinfo");
+	strictEqual(components.host, "example.com", "host");
+	strictEqual(components.port, 123, "port");
+	strictEqual(components.path, "/o\uF900ne/t\uFDCFwo.t\uFDF0hree", "path");
+	strictEqual(components.query, "q1=a1\uF8FF\uE000&q2=a2", "query");
+	strictEqual(components.fragment, "bo\uFFEFdy", "fragment");
+});
 
-	test("IRI Normalizing", function () {
-		strictEqual(URI.normalize("uri://www.example.org/red%09ros\xE9#red", IRI_OPTION), "uri://www.example.org/red%09ros\xE9#red");
-	});
+test("IRI Serialization", function () {
+	var components = {
+		scheme : "uri",
+		userinfo : "us\xA0er:pa\uD7FFss",
+		host : "example.com",
+		port : 123,
+		path : "/o\uF900ne/t\uFDCFwo.t\uFDF0hree",
+		query : "q1=a1\uF8FF\uE000&q2=a2",
+		fragment : "bo\uFFEFdy\uE001"
+	};
+	strictEqual(URI.serialize(components, IRI_OPTION), "uri://us\xA0er:pa\uD7FFss@example.com:123/o\uF900ne/t\uFDCFwo.t\uFDF0hree?q1=a1\uF8FF\uE000&q2=a2#bo\uFFEFdy%EE%80%81");
+});
 
-	test("IRI Equals", function () {
-		//example from RFC 3987
-		strictEqual(URI.equal("example://a/b/c/%7Bfoo%7D/ros\xE9", "eXAMPLE://a/./b/../b/%63/%7bfoo%7d/ros%C3%A9", IRI_OPTION), true);
-	});
+test("IRI Normalizing", function () {
+	strictEqual(URI.normalize("uri://www.example.org/red%09ros\xE9#red", IRI_OPTION), "uri://www.example.org/red%09ros\xE9#red");
+});
 
-	test("Convert IRI to URI", function () {
-		//example from RFC 3987
-		strictEqual(URI.serialize(URI.parse("uri://www.example.org/red%09ros\xE9#red", IRI_OPTION)), "uri://www.example.org/red%09ros%C3%A9#red");
-		
-		//Internationalized Domain Name conversion via punycode example from RFC 3987
-		strictEqual(URI.serialize(URI.parse("uri://r\xE9sum\xE9.example.org", {iri:true, domainHost:true}), {domainHost:true}), "uri://xn--rsum-bpad.example.org");
-	});
+test("IRI Equals", function () {
+	//example from RFC 3987
+	strictEqual(URI.equal("example://a/b/c/%7Bfoo%7D/ros\xE9", "eXAMPLE://a/./b/../b/%63/%7bfoo%7d/ros%C3%A9", IRI_OPTION), true);
+});
 
-	test("Convert URI to IRI", function () {
-		//examples from RFC 3987
-		strictEqual(URI.serialize(URI.parse("uri://www.example.org/D%C3%BCrst"), IRI_OPTION), "uri://www.example.org/D\xFCrst");
-		strictEqual(URI.serialize(URI.parse("uri://www.example.org/D%FCrst"), IRI_OPTION), "uri://www.example.org/D%FCrst");
-		strictEqual(URI.serialize(URI.parse("uri://xn--99zt52a.example.org/%e2%80%ae"), IRI_OPTION), "uri://xn--99zt52a.example.org/%E2%80%AE");  //or uri://\u7D0D\u8C46.example.org/%E2%80%AE
-		
-		//Internationalized Domain Name conversion via punycode example from RFC 3987
-		strictEqual(URI.serialize(URI.parse("uri://xn--rsum-bpad.example.org", {domainHost:true}), {iri:true, domainHost:true}), "uri://r\xE9sum\xE9.example.org");
-	});
+test("Convert IRI to URI", function () {
+	//example from RFC 3987
+	strictEqual(URI.serialize(URI.parse("uri://www.example.org/red%09ros\xE9#red", IRI_OPTION)), "uri://www.example.org/red%09ros%C3%A9#red");
 
-}
+	//Internationalized Domain Name conversion via punycode example from RFC 3987
+	strictEqual(URI.serialize(URI.parse("uri://r\xE9sum\xE9.example.org", {iri:true, domainHost:true}), {domainHost:true}), "uri://xn--rsum-bpad.example.org");
+});
+
+test("Convert URI to IRI", function () {
+	//examples from RFC 3987
+	strictEqual(URI.serialize(URI.parse("uri://www.example.org/D%C3%BCrst"), IRI_OPTION), "uri://www.example.org/D\xFCrst");
+	strictEqual(URI.serialize(URI.parse("uri://www.example.org/D%FCrst"), IRI_OPTION), "uri://www.example.org/D%FCrst");
+	strictEqual(URI.serialize(URI.parse("uri://xn--99zt52a.example.org/%e2%80%ae"), IRI_OPTION), "uri://xn--99zt52a.example.org/%E2%80%AE");  //or uri://\u7D0D\u8C46.example.org/%E2%80%AE
+
+	//Internationalized Domain Name conversion via punycode example from RFC 3987
+	strictEqual(URI.serialize(URI.parse("uri://xn--rsum-bpad.example.org", {domainHost:true}), {iri:true, domainHost:true}), "uri://r\xE9sum\xE9.example.org");
+});
 
 //
 // HTTP
@@ -418,7 +452,7 @@ if (URI.SCHEMES["urn"]) {
 		strictEqual(components.error, undefined, "errors");
 		strictEqual(components.scheme, "urn:uuid", "scheme");
 		strictEqual(components.path, "f81d4fae-7dec-11d0-a765-00a0c91e6bf6", "path");
-		
+
 		components = URI.parse("urn:uuid:notauuid-7dec-11d0-a765-00a0c91e6bf6");
 		notStrictEqual(components.error, undefined, "errors");
 	});
@@ -430,7 +464,7 @@ if (URI.SCHEMES["urn"]) {
 			path : "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
 		};
 		strictEqual(URI.serialize(components), "urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6");
-		
+
 		components = {
 			scheme : "urn:uuid",
 			path : "notauuid-7dec-11d0-a765-00a0c91e6bf6"
@@ -470,7 +504,7 @@ if (URI.SCHEMES["mailto"]) {
 		strictEqual(components.subject, undefined, "subject");
 		strictEqual(components.body, undefined, "body");
 		strictEqual(components.headers, undefined, "headers");
-		
+
 		components = URI.parse("mailto:infobot@example.com?subject=current-issue");
 		deepEqual(components.to, ["infobot@example.com"], "to");
 		strictEqual(components.subject, "current-issue", "subject");
@@ -505,7 +539,7 @@ if (URI.SCHEMES["mailto"]) {
 		components = URI.parse("mailto:unlikely%3Faddress@example.com?blat=foop");
 		deepEqual(components.to, ["unlikely?address@example.com"], "to unlikely?address@example.com");
 		deepEqual(components.headers, {"blat":"foop"}, "headers");
-		
+
 		components = URI.parse("mailto:Mike%26family@example.org");
 		deepEqual(components.to, ["Mike&family@example.org"], "to Mike&family@example.org");
 
