@@ -100,6 +100,66 @@ test("URI Parsing", function () {
 	strictEqual(components.query, undefined, "query");
 	strictEqual(components.fragment, "", "fragment");
 
+	//fragment with character tabulation
+	components = URI.parse("#\t");
+	strictEqual(components.error, undefined, "path errors");
+	strictEqual(components.scheme, undefined, "scheme");
+	//strictEqual(components.authority, undefined, "authority");
+	strictEqual(components.userinfo, undefined, "userinfo");
+	strictEqual(components.host, undefined, "host");
+	strictEqual(components.port, undefined, "port");
+	strictEqual(components.path, "", "path");
+	strictEqual(components.query, undefined, "query");
+	strictEqual(components.fragment, "%09", "fragment");
+
+	//fragment with line feed
+	components = URI.parse("#\n");
+	strictEqual(components.error, undefined, "path errors");
+	strictEqual(components.scheme, undefined, "scheme");
+	//strictEqual(components.authority, undefined, "authority");
+	strictEqual(components.userinfo, undefined, "userinfo");
+	strictEqual(components.host, undefined, "host");
+	strictEqual(components.port, undefined, "port");
+	strictEqual(components.path, "", "path");
+	strictEqual(components.query, undefined, "query");
+	strictEqual(components.fragment, "%0A", "fragment");
+
+	//fragment with line tabulation
+	components = URI.parse("#\v");
+	strictEqual(components.error, undefined, "path errors");
+	strictEqual(components.scheme, undefined, "scheme");
+	//strictEqual(components.authority, undefined, "authority");
+	strictEqual(components.userinfo, undefined, "userinfo");
+	strictEqual(components.host, undefined, "host");
+	strictEqual(components.port, undefined, "port");
+	strictEqual(components.path, "", "path");
+	strictEqual(components.query, undefined, "query");
+	strictEqual(components.fragment, "%0B", "fragment");
+
+	//fragment with form feed
+	components = URI.parse("#\f");
+	strictEqual(components.error, undefined, "path errors");
+	strictEqual(components.scheme, undefined, "scheme");
+	//strictEqual(components.authority, undefined, "authority");
+	strictEqual(components.userinfo, undefined, "userinfo");
+	strictEqual(components.host, undefined, "host");
+	strictEqual(components.port, undefined, "port");
+	strictEqual(components.path, "", "path");
+	strictEqual(components.query, undefined, "query");
+	strictEqual(components.fragment, "%0C", "fragment");
+
+	//fragment with carriage return
+	components = URI.parse("#\r");
+	strictEqual(components.error, undefined, "path errors");
+	strictEqual(components.scheme, undefined, "scheme");
+	//strictEqual(components.authority, undefined, "authority");
+	strictEqual(components.userinfo, undefined, "userinfo");
+	strictEqual(components.host, undefined, "host");
+	strictEqual(components.port, undefined, "port");
+	strictEqual(components.path, "", "path");
+	strictEqual(components.query, undefined, "query");
+	strictEqual(components.fragment, "%0D", "fragment");
+
 	//all
 	components = URI.parse("uri://user:pass@example.com:123/one/two.three?q1=a1&q2=a2#body");
 	strictEqual(components.error, undefined, "all errors");
