@@ -108,7 +108,7 @@ function _normalizeComponentEncoding(components, protocol) {
     return components;
 }
 ;
-const URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?(\[[\dA-F:.]+\]|[^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#((?:.|\n)*))?/i;
+const URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?(\[[\dA-F:.]+\]|[^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#((?:.|\n|\r)*))?/i;
 const NO_MATCH_IS_UNDEFINED = ("").match(/(){0}/)[1] === undefined;
 export function parse(uriString, options = {}) {
     const components = {};
