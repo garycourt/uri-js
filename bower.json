@@ -1,6 +1,5 @@
 {
   "name": "uri-js",
-  "version": "3.0.0",
   "description": "An RFC 3986/3987 compliant, scheme extendable URI/IRI parsing/validating/resolving library for JavaScript.",
   "main": "dist/es5/uri.all.js",
   "moduleType": [
