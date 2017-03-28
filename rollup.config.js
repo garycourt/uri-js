@@ -13,7 +13,18 @@ export default {
 			preferBuiltins: false
 		}),
 
-		babel()
+		babel({
+		  "presets": [
+		    ["latest", {
+		      "es2015": {
+		        "modules": false
+		      }
+		    }]
+		  ],
+		  "plugins": ["external-helpers"],
+		  "externalHelpers": false
+		}
+)
 	],
 	dest  : "dist/es5/uri.all.js",
 	sourceMap: true,
