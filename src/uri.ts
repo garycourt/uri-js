@@ -43,6 +43,7 @@ export interface URIComponents {
 	scheme?:string,
 	userinfo?:string,
 	host?:string,
+	hostIsIPv6Literal?:boolean,
 	port?:number|string,
 	path?:string,
 	query?:string,
@@ -147,7 +148,13 @@ function _normalizeComponentEncoding(components:URIComponents, protocol:URIRegEx
 
 	if (components.scheme) components.scheme = String(components.scheme).replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.NOT_SCHEME, "");
 	if (components.userinfo !== undefined) components.userinfo = String(components.userinfo).replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_USERINFO, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
-	if (components.host !== undefined) components.host = String(components.host).replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.NOT_HOST, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
+	if (components.host !== undefined) {
+		if (components.hostIsIPv6Literal) {
+			components.host = String(components.host).replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.PCT_ENCODED, toUpperCase);
+		} else {
+			components.host = String(components.host).replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.NOT_HOST, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
+		}
+	}
 	if (components.path !== undefined) components.path = String(components.path).replace(protocol.PCT_ENCODED, decodeUnreserved).replace((components.scheme ? protocol.NOT_PATH : protocol.NOT_PATH_NOSCHEME), pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
 	if (components.query !== undefined) components.query = String(components.query).replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_QUERY, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
 	if (components.fragment !== undefined) components.fragment = String(components.fragment).replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_FRAGMENT, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
@@ -199,7 +206,10 @@ export function parse(uriString:string, options:URIOptions = {}):URIComponents {
 
 		//strip brackets from IPv6 hosts
 		if (components.host) {
-			components.host = components.host.replace(protocol.IPV6ADDRESS, "$1");
+			if (components.host.match(protocol.IPV6ADDRESS)) {
+				components.host = components.host.replace(protocol.IPV6ADDRESS, "$1");
+				components.hostIsIPv6Literal = true;
+			}
 		}
 
 		//determine reference type

@@ -2,6 +2,7 @@ export interface URIComponents {
     scheme?: string;
     userinfo?: string;
     host?: string;
+    hostIsIPv6Literal?: boolean;
     port?: number | string;
     path?: string;
     query?: string;
