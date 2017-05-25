@@ -97,8 +97,14 @@ function _normalizeComponentEncoding(components, protocol) {
         components.scheme = String(components.scheme).replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.NOT_SCHEME, "");
     if (components.userinfo !== undefined)
         components.userinfo = String(components.userinfo).replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_USERINFO, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
-    if (components.host !== undefined)
-        components.host = String(components.host).replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.NOT_HOST, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
+    if (components.host !== undefined) {
+        if (components.hostIsIPv6Literal) {
+            components.host = String(components.host).replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.PCT_ENCODED, toUpperCase);
+        }
+        else {
+            components.host = String(components.host).replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.NOT_HOST, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
+        }
+    }
     if (components.path !== undefined)
         components.path = String(components.path).replace(protocol.PCT_ENCODED, decodeUnreserved).replace((components.scheme ? protocol.NOT_PATH : protocol.NOT_PATH_NOSCHEME), pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
     if (components.query !== undefined)
@@ -108,7 +114,7 @@ function _normalizeComponentEncoding(components, protocol) {
     return components;
 }
 ;
-const URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?(\[[\dA-F:.]+\]|[^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#((?:.|\n|\r)*))?/i;
+const URI_PARSE = /^(?:([^\[\]:\/?#]+):)?(?:\/\/((?:([^\[\]\/?#@]*)@)?(\[[\dA-F:.]+%?[a-z]*[\d]*\]|[^\[\]\/?#:]*)(?:\:(\d*))?))?([^\[\]?#]*)(?:\?([^\[\]#]*))?(?:#((?:.|\n|\r)*))?/i;
 const NO_MATCH_IS_UNDEFINED = ("").match(/(){0}/)[1] === undefined;
 export function parse(uriString, options = {}) {
     const components = {};
@@ -134,7 +140,9 @@ export function parse(uriString, options = {}) {
         else {
             //store each component
             components.scheme = matches[1] || undefined;
-            components.userinfo = (uriString.indexOf("@") !== -1 ? matches[3] : undefined);
+            if (!(matches[4] !== undefined && matches[4].indexOf("@") !== -1)) {
+                components.userinfo = (uriString.indexOf("@") !== -1 ? matches[3] : undefined);
+            }
             components.host = (uriString.indexOf("//") !== -1 ? matches[4] : undefined);
             components.port = parseInt(matches[5], 10);
             components.path = matches[6] || "";
@@ -147,7 +155,10 @@ export function parse(uriString, options = {}) {
         }
         //strip brackets from IPv6 hosts
         if (components.host) {
-            components.host = components.host.replace(protocol.IPV6ADDRESS, "$1");
+            if (components.host.match(protocol.IPV6ADDRESS)) {
+                components.host = components.host.replace(protocol.IPV6ADDRESS, "$1");
+                components.hostIsIPv6Literal = true;
+            }
         }
         //determine reference type
         if (components.scheme === undefined && components.userinfo === undefined && components.host === undefined && components.port === undefined && !components.path && components.query === undefined) {

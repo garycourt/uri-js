@@ -1,4 +1,4 @@
-/** @license URI.js v3.0.1 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js */
+/** @license URI.js v3.0.2 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js */
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -78,7 +78,9 @@ function buildExps(isIRI) {
         //[ *5( h16 ":" ) h16 ] "::"              h16
     IPV6ADDRESS9$ = subexp(subexp(subexp(H16$ + "\\:") + "{0,6}" + H16$) + "?\\:\\:"),
         //[ *6( h16 ":" ) h16 ] "::"
-    IPV6ADDRESS$ = subexp([IPV6ADDRESS1$, IPV6ADDRESS2$, IPV6ADDRESS3$, IPV6ADDRESS4$, IPV6ADDRESS5$, IPV6ADDRESS6$, IPV6ADDRESS7$, IPV6ADDRESS8$, IPV6ADDRESS9$].join("|")),
+    IPV6ADDRESSBASE$ = subexp([IPV6ADDRESS1$, IPV6ADDRESS2$, IPV6ADDRESS3$, IPV6ADDRESS4$, IPV6ADDRESS5$, IPV6ADDRESS6$, IPV6ADDRESS7$, IPV6ADDRESS8$, IPV6ADDRESS9$].join("|")),
+        IPV6ZONE$ = subexp("\\%" + ALPHA$$ + "+" + DIGIT$$ + "+"),
+        IPV6ADDRESS$ = subexp([IPV6ADDRESSBASE$ + IPV6ZONE$, IPV6ADDRESSBASE$].join("|")),
         IPVFUTURE$ = subexp("[vV]" + HEXDIG$$ + "+\\." + merge(UNRESERVED$$, SUB_DELIMS$$, "[\\:]") + "+"),
         IP_LITERAL$ = subexp("\\[" + subexp(IPV6ADDRESS$ + "|" + IPVFUTURE$) + "\\]"),
         REG_NAME$ = subexp(subexp(PCT_ENCODED$ + "|" + merge(UNRESERVED$$, SUB_DELIMS$$)) + "*"),
@@ -717,14 +719,20 @@ function _normalizeComponentEncoding(components, protocol) {
     }
     if (components.scheme) components.scheme = String(components.scheme).replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.NOT_SCHEME, "");
     if (components.userinfo !== undefined) components.userinfo = String(components.userinfo).replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_USERINFO, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
-    if (components.host !== undefined) components.host = String(components.host).replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.NOT_HOST, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
+    if (components.host !== undefined) {
+        if (components.hostIsIPv6Literal) {
+            components.host = String(components.host).replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.PCT_ENCODED, toUpperCase);
+        } else {
+            components.host = String(components.host).replace(protocol.PCT_ENCODED, decodeUnreserved).toLowerCase().replace(protocol.NOT_HOST, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
+        }
+    }
     if (components.path !== undefined) components.path = String(components.path).replace(protocol.PCT_ENCODED, decodeUnreserved).replace(components.scheme ? protocol.NOT_PATH : protocol.NOT_PATH_NOSCHEME, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
     if (components.query !== undefined) components.query = String(components.query).replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_QUERY, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
     if (components.fragment !== undefined) components.fragment = String(components.fragment).replace(protocol.PCT_ENCODED, decodeUnreserved).replace(protocol.NOT_FRAGMENT, pctEncChar).replace(protocol.PCT_ENCODED, toUpperCase);
     return components;
 }
 
-var URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?(\[[\dA-F:.]+\]|[^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#((?:.|\n|\r)*))?/i;
+var URI_PARSE = /^(?:([^\[\]:\/?#]+):)?(?:\/\/((?:([^\[\]\/?#@]*)@)?(\[[\dA-F:.]+%?[a-z]*[\d]*\]|[^\[\]\/?#:]*)(?:\:(\d*))?))?([^\[\]?#]*)(?:\?([^\[\]#]*))?(?:#((?:.|\n|\r)*))?/i;
 var NO_MATCH_IS_UNDEFINED = "".match(/(){0}/)[1] === undefined;
 function parse(uriString) {
     var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -750,7 +758,9 @@ function parse(uriString) {
         } else {
             //store each component
             components.scheme = matches[1] || undefined;
-            components.userinfo = uriString.indexOf("@") !== -1 ? matches[3] : undefined;
+            if (!(matches[4] !== undefined && matches[4].indexOf("@") !== -1)) {
+                components.userinfo = uriString.indexOf("@") !== -1 ? matches[3] : undefined;
+            }
             components.host = uriString.indexOf("//") !== -1 ? matches[4] : undefined;
             components.port = parseInt(matches[5], 10);
             components.path = matches[6] || "";
@@ -763,7 +773,10 @@ function parse(uriString) {
         }
         //strip brackets from IPv6 hosts
         if (components.host) {
-            components.host = components.host.replace(protocol.IPV6ADDRESS, "$1");
+            if (components.host.match(protocol.IPV6ADDRESS)) {
+                components.host = components.host.replace(protocol.IPV6ADDRESS, "$1");
+                components.hostIsIPv6Literal = true;
+            }
         }
         //determine reference type
         if (components.scheme === undefined && components.userinfo === undefined && components.host === undefined && components.port === undefined && !components.path && components.query === undefined) {

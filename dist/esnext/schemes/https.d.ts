@@ -1,5 +1,5 @@
 import { URIComponents, URIOptions } from "../uri";
-declare var _default: {
+declare const _default: {
     scheme: string;
     domainHost: boolean;
     parse: (components: URIComponents, options: URIOptions) => URIComponents;
