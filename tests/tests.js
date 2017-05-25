@@ -226,6 +226,18 @@ test("URI Parsing", function () {
 	strictEqual(components.path, "/test", "path");
 	strictEqual(components.query, undefined, "query");
 	strictEqual(components.fragment, undefined, "fragment");
+
+	//IPv6address with an interface specifier
+	components = URI.parse("//[2001:db8::7%en0]");
+	strictEqual(components.error, undefined, "IPv4address errors");
+	strictEqual(components.scheme, undefined, "scheme");
+	strictEqual(components.userinfo, undefined, "userinfo");
+	strictEqual(components.host, "2001:db8::7%en0", "host");
+	strictEqual(components.port, undefined, "port");
+	strictEqual(components.path, "", "path");
+	strictEqual(components.query, undefined, "query");
+	strictEqual(components.fragment, undefined, "fragment");
+
 });
 
 test("URI Serialization", function () {
