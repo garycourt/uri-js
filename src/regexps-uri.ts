@@ -32,7 +32,9 @@ export function buildExps(isIRI:boolean):URIRegExps {
 		IPV6ADDRESS7$ = subexp(subexp(subexp(H16$ + "\\:") + "{0,4}" + H16$) + "?\\:\\:"                                + LS32$), //[ *4( h16 ":" ) h16 ] "::"              ls32
 		IPV6ADDRESS8$ = subexp(subexp(subexp(H16$ + "\\:") + "{0,5}" + H16$) + "?\\:\\:"                                + H16$ ), //[ *5( h16 ":" ) h16 ] "::"              h16
 		IPV6ADDRESS9$ = subexp(subexp(subexp(H16$ + "\\:") + "{0,6}" + H16$) + "?\\:\\:"                                       ), //[ *6( h16 ":" ) h16 ] "::"
-		IPV6ADDRESS$ = subexp([IPV6ADDRESS1$, IPV6ADDRESS2$, IPV6ADDRESS3$, IPV6ADDRESS4$, IPV6ADDRESS5$, IPV6ADDRESS6$, IPV6ADDRESS7$, IPV6ADDRESS8$, IPV6ADDRESS9$].join("|")),
+		IPV6ADDRESSBASE$ = subexp([IPV6ADDRESS1$, IPV6ADDRESS2$, IPV6ADDRESS3$, IPV6ADDRESS4$, IPV6ADDRESS5$, IPV6ADDRESS6$, IPV6ADDRESS7$, IPV6ADDRESS8$, IPV6ADDRESS9$].join("|")),
+		IPV6ZONE$ = subexp("\\%" + ALPHA$$ + "+" + DIGIT$$ + "+"),
+		IPV6ADDRESS$ = subexp([IPV6ADDRESSBASE$ + IPV6ZONE$, IPV6ADDRESSBASE$].join("|")),
 		IPVFUTURE$ = subexp("[vV]" + HEXDIG$$ + "+\\." + merge(UNRESERVED$$, SUB_DELIMS$$, "[\\:]") + "+"),
 		IP_LITERAL$ = subexp("\\[" + subexp(IPV6ADDRESS$ + "|" + IPVFUTURE$) + "\\]"),
 		REG_NAME$ = subexp(subexp(PCT_ENCODED$ + "|" + merge(UNRESERVED$$, SUB_DELIMS$$)) + "*"),
