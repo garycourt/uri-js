@@ -8,7 +8,7 @@ export interface MailtoComponents extends URIComponents {
     subject?: string;
     body?: string;
 }
-declare var _default: {
+declare const _default: {
     scheme: string;
     parse: (components: MailtoComponents, options: URIOptions) => MailtoComponents;
     serialize: (components: MailtoComponents, options: URIOptions) => URIComponents;
