@@ -155,7 +155,7 @@ function _normalizeComponentEncoding(components:URIComponents, protocol:URIRegEx
 	return components;
 };
 
-const URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?(\[[\dA-F:.]+\]|[^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#((?:.|\n|\r)*))?/i;
+const URI_PARSE = /^(?:([^\[\]:\/?#]+):)?(?:\/\/((?:([^\[\]\/?#@]*)@)?(\[[\dA-F:.]+%?[a-z]*[\d]*\]|[^\[\]\/?#:]*)(?:\:(\d*))?))?([^\[\]?#]*)(?:\?([^\[\]#]*))?(?:#((?:.|\n|\r)*))?/i;
 const NO_MATCH_IS_UNDEFINED = (<RegExpMatchArray>("").match(/(){0}/))[1] === undefined;
 
 export function parse(uriString:string, options:URIOptions = {}):URIComponents {
