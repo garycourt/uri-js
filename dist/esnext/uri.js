@@ -108,7 +108,7 @@ function _normalizeComponentEncoding(components, protocol) {
     return components;
 }
 ;
-const URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?(\[[\dA-F:.]+\]|[^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#((?:.|\n|\r)*))?/i;
+const URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?(\[[^\/?#\]]+\]|[^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#((?:.|\n|\r)*))?/i;
 const NO_MATCH_IS_UNDEFINED = ("").match(/(){0}/)[1] === undefined;
 export function parse(uriString, options = {}) {
     const components = {};
@@ -145,9 +145,9 @@ export function parse(uriString, options = {}) {
                 components.port = (uriString.match(/\/\/(?:.|\n)*\:(?:\/|\?|\#|$)/) ? matches[4] : undefined);
             }
         }
-        //strip brackets from IPv6 hosts
         if (components.host) {
-            components.host = components.host.replace(protocol.IPV6ADDRESS, "$1");
+            //strip brackets from IPv6 hosts, unescape zone separator
+            components.host = components.host.replace(protocol.IP_LITERAL, "$1").replace(protocol.IPV6ADDRZ, "$1%$2");
         }
         //determine reference type
         if (components.scheme === undefined && components.userinfo === undefined && components.host === undefined && components.port === undefined && !components.path && components.query === undefined) {
@@ -206,8 +206,8 @@ function _recomposeAuthority(components, options) {
         uriTokens.push("@");
     }
     if (components.host !== undefined) {
-        //ensure IPv6 addresses are bracketed
-        uriTokens.push(String(components.host).replace(protocol.IPV6ADDRESS, "[$1]"));
+        //ensure IPv6 addresses are bracketed, and zone separator escaped
+        uriTokens.push(String(components.host).replace(protocol.IPV6ADDRZ, "$1%25$2").replace(protocol.IPV6ADDRESS, "[$1]"));
     }
     if (typeof components.port === "number") {
         uriTokens.push(":");

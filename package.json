@@ -1,6 +1,6 @@
 {
   "name": "uri-js",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "An RFC 3986/3987 compliant, scheme extendable URI/IRI parsing/validating/resolving library for JavaScript.",
   "main": "dist/es5/uri.all.js",
   "types": "dist/es5/uri.all.d.ts",
@@ -36,7 +36,8 @@
     "RFC2141",
     "RFC4122",
     "RFC4291",
-    "RFC6068"
+    "RFC6068",
+    "RFC6874"
   ],
   "author": "Gary Court <gary.court@gmail.com>",
   "license": "BSD-2-Clause",

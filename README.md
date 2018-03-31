@@ -1,7 +1,7 @@
 # URI.js
 
 URI.js is an [RFC 3986](http://www.ietf.org/rfc/rfc3986.txt) compliant, scheme extendable URI parsing/validating/resolving library for all JavaScript environments (browsers, Node.js, etc).
-It is also compliant with the IRI ([RFC 3987](http://www.ietf.org/rfc/rfc3987.txt)) and IDNA ([RFC 5890](http://www.ietf.org/rfc/rfc5890.txt)) specifications.
+It is also compliant with the IRI ([RFC 3987](http://www.ietf.org/rfc/rfc3987.txt)), IDNA ([RFC 5890](http://www.ietf.org/rfc/rfc5890.txt)), and IPv6 Zone Identifier ([RFC 6874](http://www.ietf.org/rfc/rfc6874.txt)) specifications.
 
 URI.js has an extensive test suite, and works in all (Node.js, web) environments. It weighs in at 5.6kb (gzipped, 15kb deflated).
 
@@ -9,7 +9,7 @@ URI.js has an extensive test suite, and works in all (Node.js, web) environments
 
 ### Parsing & Validating
 
-	var components = URI.parse("uri://user:pass@example.com:123/one/two.three?q1=a1&q2=a2#body");
+	URI.parse("uri://user:pass@example.com:123/one/two.three?q1=a1&q2=a2#body");
 	//returns:
 	//{
 	//  scheme : "uri",
@@ -36,6 +36,14 @@ URI.js has an extensive test suite, and works in all (Node.js, web) environments
 ### Comparison
 
 	URI.equal("example://a/b/c/%7Bfoo%7D", "eXAMPLE://a/./b/../b/%63/%7bfoo%7d") === true
+
+### IPv6 Support
+
+	URI.parse("//[2001:db8::7%25en1]");
+	//returns:
+	//{
+	//  host : "2001:db8::7%en1"
+	//}
 
 ### IRI Support
 
@@ -143,7 +151,7 @@ To load in a CommonJS (Node.js) environment, first install with npm by running o
 
 Then, in your code, load it using:
 
-	var URI = require("uri-js");
+	const URI = require("uri-js");
 
 If you are writing your code in ES6+ (ESNEXT) or TypeScript, you would load it using:
 

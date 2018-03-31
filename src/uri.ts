@@ -82,7 +82,9 @@ export interface URIRegExps {
 	UNRESERVED : RegExp,
 	OTHER_CHARS : RegExp,
 	PCT_ENCODED : RegExp,
-	IPV6ADDRESS : RegExp
+	IPV6ADDRESS : RegExp,
+	IP_LITERAL : RegExp,
+	IPV6ADDRZ : RegExp
 }
 
 export const SCHEMES:{[scheme:string]:URISchemeHandler} = {};
@@ -155,7 +157,7 @@ function _normalizeComponentEncoding(components:URIComponents, protocol:URIRegEx
 	return components;
 };
 
-const URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?(\[[\dA-F:.]+\]|[^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#((?:.|\n|\r)*))?/i;
+const URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?(\[[^\/?#\]]+\]|[^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#((?:.|\n|\r)*))?/i;
 const NO_MATCH_IS_UNDEFINED = (<RegExpMatchArray>("").match(/(){0}/))[1] === undefined;
 
 export function parse(uriString:string, options:URIOptions = {}):URIComponents {
@@ -197,9 +199,9 @@ export function parse(uriString:string, options:URIOptions = {}):URIComponents {
 			}
 		}
 
-		//strip brackets from IPv6 hosts
 		if (components.host) {
-			components.host = components.host.replace(protocol.IPV6ADDRESS, "$1");
+			//strip brackets from IPv6 hosts, unescape zone separator
+			components.host = components.host.replace(protocol.IP_LITERAL, "$1").replace(protocol.IPV6ADDRZ, "$1%$2");
 		}
 
 		//determine reference type
@@ -260,8 +262,8 @@ function _recomposeAuthority(components:URIComponents, options:URIOptions):strin
 	}
 
 	if (components.host !== undefined) {
-		//ensure IPv6 addresses are bracketed
-		uriTokens.push(String(components.host).replace(protocol.IPV6ADDRESS, "[$1]"));
+		//ensure IPv6 addresses are bracketed, and zone separator escaped
+		uriTokens.push(String(components.host).replace(protocol.IPV6ADDRZ, "$1%25$2").replace(protocol.IPV6ADDRESS, "[$1]"));
 	}
 
 	if (typeof components.port === "number") {

@@ -33,8 +33,10 @@ export function buildExps(isIRI:boolean):URIRegExps {
 		IPV6ADDRESS8$ = subexp(subexp(subexp(H16$ + "\\:") + "{0,5}" + H16$) + "?\\:\\:"                                + H16$ ), //[ *5( h16 ":" ) h16 ] "::"              h16
 		IPV6ADDRESS9$ = subexp(subexp(subexp(H16$ + "\\:") + "{0,6}" + H16$) + "?\\:\\:"                                       ), //[ *6( h16 ":" ) h16 ] "::"
 		IPV6ADDRESS$ = subexp([IPV6ADDRESS1$, IPV6ADDRESS2$, IPV6ADDRESS3$, IPV6ADDRESS4$, IPV6ADDRESS5$, IPV6ADDRESS6$, IPV6ADDRESS7$, IPV6ADDRESS8$, IPV6ADDRESS9$].join("|")),
+		ZONEID$ = subexp(subexp(UNRESERVED$$ + "|" + PCT_ENCODED$) + "+"),  //RFC 6874
+		IPV6ADDRZ$ = subexp(IPV6ADDRESS$ + subexp("\\%25|\\%(?!" + HEXDIG$$ + "{2})") + ZONEID$),  //RFC 6874, with relaxed parsing rules
 		IPVFUTURE$ = subexp("[vV]" + HEXDIG$$ + "+\\." + merge(UNRESERVED$$, SUB_DELIMS$$, "[\\:]") + "+"),
-		IP_LITERAL$ = subexp("\\[" + subexp(IPV6ADDRESS$ + "|" + IPVFUTURE$) + "\\]"),
+		IP_LITERAL$ = subexp("\\[" + subexp(IPV6ADDRZ$ + "|" + IPV6ADDRESS$ + "|" + IPVFUTURE$) + "\\]"),  //RFC 6874
 		REG_NAME$ = subexp(subexp(PCT_ENCODED$ + "|" + merge(UNRESERVED$$, SUB_DELIMS$$)) + "*"),
 		HOST$ = subexp(IP_LITERAL$ + "|" + IPV4ADDRESS$ + "(?!" + REG_NAME$ + ")" + "|" + REG_NAME$),
 		PORT$ = subexp(DIGIT$$ + "*"),
@@ -77,7 +79,9 @@ export function buildExps(isIRI:boolean):URIRegExps {
 		UNRESERVED : new RegExp(UNRESERVED$$, "g"),
 		OTHER_CHARS : new RegExp(merge("[^\\%]", UNRESERVED$$, RESERVED$$), "g"),
 		PCT_ENCODED : new RegExp(PCT_ENCODED$, "g"),
-		IPV6ADDRESS : new RegExp("\\[?(" + IPV6ADDRESS$ + ")\\]?", "g")
+		IPV6ADDRESS : new RegExp("\\[?(" + IPV6ADDRZ$ + "|" + IPV6ADDRESS$ + ")\\]?", "g"),
+		IP_LITERAL : new RegExp("\\[(" + IPV6ADDRZ$ + "|" + IPV6ADDRESS$ + ")\\]", "g"),
+		IPV6ADDRZ : new RegExp("(" + IPV6ADDRESS$ + ")" + subexp("\\%25|\\%(?!" + HEXDIG$$ + "{2})") + "(" + ZONEID$ + ")", "g"),  //RFC 6874, with relaxed parsing rules
 	};
 }
 

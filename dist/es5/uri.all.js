@@ -1,4 +1,4 @@
-/** @license URI.js v4.0.0 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js */
+/** @license URI.js v4.1.0 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js */
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -79,9 +79,14 @@ function buildExps(isIRI) {
     IPV6ADDRESS9$ = subexp(subexp(subexp(H16$ + "\\:") + "{0,6}" + H16$) + "?\\:\\:"),
         //[ *6( h16 ":" ) h16 ] "::"
     IPV6ADDRESS$ = subexp([IPV6ADDRESS1$, IPV6ADDRESS2$, IPV6ADDRESS3$, IPV6ADDRESS4$, IPV6ADDRESS5$, IPV6ADDRESS6$, IPV6ADDRESS7$, IPV6ADDRESS8$, IPV6ADDRESS9$].join("|")),
-        IPVFUTURE$ = subexp("[vV]" + HEXDIG$$ + "+\\." + merge(UNRESERVED$$, SUB_DELIMS$$, "[\\:]") + "+"),
-        IP_LITERAL$ = subexp("\\[" + subexp(IPV6ADDRESS$ + "|" + IPVFUTURE$) + "\\]"),
-        REG_NAME$ = subexp(subexp(PCT_ENCODED$ + "|" + merge(UNRESERVED$$, SUB_DELIMS$$)) + "*"),
+        ZONEID$ = subexp(subexp(UNRESERVED$$ + "|" + PCT_ENCODED$) + "+"),
+        //RFC 6874
+    IPV6ADDRZ$ = subexp(IPV6ADDRESS$ + subexp("\\%25|\\%(?!" + HEXDIG$$ + "{2})") + ZONEID$),
+        //RFC 6874, with relaxed parsing rules
+    IPVFUTURE$ = subexp("[vV]" + HEXDIG$$ + "+\\." + merge(UNRESERVED$$, SUB_DELIMS$$, "[\\:]") + "+"),
+        IP_LITERAL$ = subexp("\\[" + subexp(IPV6ADDRZ$ + "|" + IPV6ADDRESS$ + "|" + IPVFUTURE$) + "\\]"),
+        //RFC 6874
+    REG_NAME$ = subexp(subexp(PCT_ENCODED$ + "|" + merge(UNRESERVED$$, SUB_DELIMS$$)) + "*"),
         HOST$ = subexp(IP_LITERAL$ + "|" + IPV4ADDRESS$ + "(?!" + REG_NAME$ + ")" + "|" + REG_NAME$),
         PORT$ = subexp(DIGIT$$ + "*"),
         AUTHORITY$ = subexp(subexp(USERINFO$ + "@") + "?" + HOST$ + subexp("\\:" + PORT$) + "?"),
@@ -123,7 +128,9 @@ function buildExps(isIRI) {
         UNRESERVED: new RegExp(UNRESERVED$$, "g"),
         OTHER_CHARS: new RegExp(merge("[^\\%]", UNRESERVED$$, RESERVED$$), "g"),
         PCT_ENCODED: new RegExp(PCT_ENCODED$, "g"),
-        IPV6ADDRESS: new RegExp("\\[?(" + IPV6ADDRESS$ + ")\\]?", "g")
+        IPV6ADDRESS: new RegExp("\\[?(" + IPV6ADDRZ$ + "|" + IPV6ADDRESS$ + ")\\]?", "g"),
+        IP_LITERAL: new RegExp("\\[(" + IPV6ADDRZ$ + "|" + IPV6ADDRESS$ + ")\\]", "g"),
+        IPV6ADDRZ: new RegExp("(" + IPV6ADDRESS$ + ")" + subexp("\\%25|\\%(?!" + HEXDIG$$ + "{2})") + "(" + ZONEID$ + ")", "g")
     };
 }
 var URI_PROTOCOL = buildExps(false);
@@ -724,7 +731,7 @@ function _normalizeComponentEncoding(components, protocol) {
     return components;
 }
 
-var URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?(\[[\dA-F:.]+\]|[^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#((?:.|\n|\r)*))?/i;
+var URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?(\[[^\/?#\]]+\]|[^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#((?:.|\n|\r)*))?/i;
 var NO_MATCH_IS_UNDEFINED = "".match(/(){0}/)[1] === undefined;
 function parse(uriString) {
     var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
@@ -762,9 +769,9 @@ function parse(uriString) {
                 components.port = uriString.match(/\/\/(?:.|\n)*\:(?:\/|\?|\#|$)/) ? matches[4] : undefined;
             }
         }
-        //strip brackets from IPv6 hosts
         if (components.host) {
-            components.host = components.host.replace(protocol.IPV6ADDRESS, "$1");
+            //strip brackets from IPv6 hosts, unescape zone separator
+            components.host = components.host.replace(protocol.IP_LITERAL, "$1").replace(protocol.IPV6ADDRZ, "$1%$2");
         }
         //determine reference type
         if (components.scheme === undefined && components.userinfo === undefined && components.host === undefined && components.port === undefined && !components.path && components.query === undefined) {
@@ -817,8 +824,8 @@ function _recomposeAuthority(components, options) {
         uriTokens.push("@");
     }
     if (components.host !== undefined) {
-        //ensure IPv6 addresses are bracketed
-        uriTokens.push(String(components.host).replace(protocol.IPV6ADDRESS, "[$1]"));
+        //ensure IPv6 addresses are bracketed, and zone separator escaped
+        uriTokens.push(String(components.host).replace(protocol.IPV6ADDRZ, "$1%25$2").replace(protocol.IPV6ADDRESS, "[$1]"));
     }
     if (typeof components.port === "number") {
         uriTokens.push(":");

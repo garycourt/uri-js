@@ -226,6 +226,28 @@ test("URI Parsing", function () {
 	strictEqual(components.path, "/test", "path");
 	strictEqual(components.query, undefined, "query");
 	strictEqual(components.fragment, undefined, "fragment");
+
+	//IPv6address with zone identifier, RFC 6874
+	components = URI.parse("//[fe80::a%25en1]");
+	strictEqual(components.error, undefined, "IPv4address errors");
+	strictEqual(components.scheme, undefined, "scheme");
+	strictEqual(components.userinfo, undefined, "userinfo");
+	strictEqual(components.host, "fe80::a%en1", "host");
+	strictEqual(components.port, undefined, "port");
+	strictEqual(components.path, "", "path");
+	strictEqual(components.query, undefined, "query");
+	strictEqual(components.fragment, undefined, "fragment");
+
+	//IPv6address with an unescaped interface specifier, example from pekkanikander (https://github.com/garycourt/uri-js/pull/22)
+	components = URI.parse("//[2001:db8::7%en0]");
+	strictEqual(components.error, undefined, "IPv6address interface errors");
+	strictEqual(components.scheme, undefined, "scheme");
+	strictEqual(components.userinfo, undefined, "userinfo");
+	strictEqual(components.host, "2001:db8::7%en0", "host");
+	strictEqual(components.port, undefined, "port");
+	strictEqual(components.path, "", "path");
+	strictEqual(components.query, undefined, "query");
+	strictEqual(components.fragment, undefined, "fragment");
 });
 
 test("URI Serialization", function () {
@@ -265,6 +287,18 @@ test("URI Serialization", function () {
 	strictEqual(URI.serialize({path:"//path"}), "/%2Fpath", "Double slash path");
 	strictEqual(URI.serialize({path:"foo:bar"}), "foo%3Abar", "Colon path");
 	strictEqual(URI.serialize({path:"?query"}), "%3Fquery", "Query path");
+
+	//mixed IPv4address & reg-name, example from terion-name (https://github.com/garycourt/uri-js/issues/4)
+	strictEqual(URI.serialize({host:"10.10.10.10.example.com"}), "//10.10.10.10.example.com", "Mixed IPv4address & reg-name");
+
+	//IPv6address
+	strictEqual(URI.serialize({host:"2001:db8::7"}), "//[2001:db8::7]", "IPv6 Host");
+	strictEqual(URI.serialize({host:"::ffff:129.144.52.38"}), "//[::ffff:129.144.52.38]", "IPv6 Mixed Host");
+	strictEqual(URI.serialize({host:"2606:2800:220:1:248:1893:25c8:1946"}), "//[2606:2800:220:1:248:1893:25c8:1946]", "IPv6 Full Host");
+
+	//IPv6address with zone identifier, RFC 6874
+	strictEqual(URI.serialize({host:"fe80::a%en1"}), "//[fe80::a%25en1]", "IPv6 Zone Unescaped Host");
+	strictEqual(URI.serialize({host:"fe80::a%25en1"}), "//[fe80::a%25en1]", "IPv6 Zone Escaped Host");
 });
 
 test("URI Resolving", function () {
