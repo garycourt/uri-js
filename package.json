@@ -1,6 +1,6 @@
 {
   "name": "uri-js",
-  "version": "3.0.2",
+  "version": "4.0.0",
   "description": "An RFC 3986/3987 compliant, scheme extendable URI/IRI parsing/validating/resolving library for JavaScript.",
   "main": "dist/es5/uri.all.js",
   "types": "dist/es5/uri.all.d.ts",
@@ -54,7 +54,7 @@
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-node-resolve": "^2.0.0",
     "sorcery": "^0.10.0",
-    "typescript": "^2.2.1",
+    "typescript": "^2.8.1",
     "uglify-js": "^2.8.14"
   },
   "dependencies": {

@@ -474,21 +474,24 @@ if (URI.SCHEMES["urn"]) {
 		//example from RFC 2141
 		var components = URI.parse("urn:foo:a123,456");
 		strictEqual(components.error, undefined, "errors");
-		strictEqual(components.scheme, "urn:foo", "scheme");
+		strictEqual(components.scheme, "urn", "scheme");
 		//strictEqual(components.authority, undefined, "authority");
 		strictEqual(components.userinfo, undefined, "userinfo");
 		strictEqual(components.host, undefined, "host");
 		strictEqual(components.port, undefined, "port");
-		strictEqual(components.path, "a123,456", "path");
+		strictEqual(components.path, undefined, "path");
 		strictEqual(components.query, undefined, "query");
 		strictEqual(components.fragment, undefined, "fragment");
+		strictEqual(components.nid, "foo", "nid");
+		strictEqual(components.nss, "a123,456", "nss");
 	});
 
 	test("URN Serialization", function () {
 		//example from RFC 2141
 		var components = {
-			scheme : "urn:foo",
-			path : "a123,456"
+			scheme : "urn",
+			nid : "foo",
+			nss : "a123,456"
 		};
 		strictEqual(URI.serialize(components), "urn:foo:a123,456");
 	});
@@ -510,8 +513,17 @@ if (URI.SCHEMES["urn"]) {
 		//example from RFC 4122
 		var components = URI.parse("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6");
 		strictEqual(components.error, undefined, "errors");
-		strictEqual(components.scheme, "urn:uuid", "scheme");
-		strictEqual(components.path, "f81d4fae-7dec-11d0-a765-00a0c91e6bf6", "path");
+		strictEqual(components.scheme, "urn", "scheme");
+		//strictEqual(components.authority, undefined, "authority");
+		strictEqual(components.userinfo, undefined, "userinfo");
+		strictEqual(components.host, undefined, "host");
+		strictEqual(components.port, undefined, "port");
+		strictEqual(components.path, undefined, "path");
+		strictEqual(components.query, undefined, "query");
+		strictEqual(components.fragment, undefined, "fragment");
+		strictEqual(components.nid, "uuid", "nid");
+		strictEqual(components.nss, undefined, "nss");
+		strictEqual(components.uuid, "f81d4fae-7dec-11d0-a765-00a0c91e6bf6", "uuid");
 
 		components = URI.parse("urn:uuid:notauuid-7dec-11d0-a765-00a0c91e6bf6");
 		notStrictEqual(components.error, undefined, "errors");
@@ -520,22 +532,40 @@ if (URI.SCHEMES["urn"]) {
 	test("UUID Serialization", function () {
 		//example from RFC 4122
 		var components = {
-			scheme : "urn:uuid",
-			path : "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+			scheme : "urn",
+			nid : "uuid",
+			uuid : "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
 		};
 		strictEqual(URI.serialize(components), "urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6");
 
 		components = {
-			scheme : "urn:uuid",
-			path : "notauuid-7dec-11d0-a765-00a0c91e6bf6"
+			scheme : "urn",
+			nid : "uuid",
+			uuid : "notauuid-7dec-11d0-a765-00a0c91e6bf6"
 		};
-		strictEqual(URI.serialize(components), "notauuid-7dec-11d0-a765-00a0c91e6bf6");
+		strictEqual(URI.serialize(components), "urn:uuid:notauuid-7dec-11d0-a765-00a0c91e6bf6");
 	});
 
 	test("UUID Equals", function () {
 		strictEqual(URI.equal("URN:UUID:F81D4FAE-7DEC-11D0-A765-00A0C91E6BF6", "urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6"), true);
 	});
 
+	test("URN NID Override", function () {
+		var components = URI.parse("urn:foo:f81d4fae-7dec-11d0-a765-00a0c91e6bf6", {nid:"uuid"});
+		strictEqual(components.error, undefined, "errors");
+		strictEqual(components.scheme, "urn", "scheme");
+		strictEqual(components.path, undefined, "path");
+		strictEqual(components.nid, "foo", "nid");
+		strictEqual(components.nss, undefined, "nss");
+		strictEqual(components.uuid, "f81d4fae-7dec-11d0-a765-00a0c91e6bf6", "uuid");
+
+		var components = {
+			scheme : "urn",
+			nid : "foo",
+			uuid : "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+		};
+		strictEqual(URI.serialize(components, {nid:"uuid"}), "urn:foo:f81d4fae-7dec-11d0-a765-00a0c91e6bf6");
+	});
 }
 
 //

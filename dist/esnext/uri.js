@@ -131,7 +131,7 @@ export function parse(uriString, options = {}) {
                 components.port = matches[5];
             }
         }
-        else {
+        else { //IE FIX for improper RegExp matching
             //store each component
             components.scheme = matches[1] || undefined;
             components.userinfo = (uriString.indexOf("@") !== -1 ? matches[3] : undefined);
@@ -265,6 +265,7 @@ export function serialize(components, options = {}) {
         if (protocol.IPV6ADDRESS.test(components.host)) {
             //TODO: normalize IPv6 address as per RFC 5952
         }
+        //if host component is a domain name
         else if (options.domainHost || (schemeHandler && schemeHandler.domainHost)) {
             //convert IDN via punycode
             try {

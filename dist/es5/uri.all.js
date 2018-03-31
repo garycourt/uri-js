@@ -1,4 +1,4 @@
-/** @license URI.js v3.0.1 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js */
+/** @license URI.js v4.0.0 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js */
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -748,6 +748,7 @@ function parse(uriString) {
                 components.port = matches[5];
             }
         } else {
+            //IE FIX for improper RegExp matching
             //store each component
             components.scheme = matches[1] || undefined;
             components.userinfo = uriString.indexOf("@") !== -1 ? matches[3] : undefined;
@@ -867,16 +868,18 @@ function serialize(components) {
     if (schemeHandler && schemeHandler.serialize) schemeHandler.serialize(components, options);
     if (components.host) {
         //if host component is an IPv6 address
-        if (protocol.IPV6ADDRESS.test(components.host)) {
-            //TODO: normalize IPv6 address as per RFC 5952
-        } else if (options.domainHost || schemeHandler && schemeHandler.domainHost) {
-            //convert IDN via punycode
-            try {
-                components.host = !options.iri ? punycode.toASCII(components.host.replace(protocol.PCT_ENCODED, pctDecChars).toLowerCase()) : punycode.toUnicode(components.host);
-            } catch (e) {
-                components.error = components.error || "Host's domain name can not be converted to " + (!options.iri ? "ASCII" : "Unicode") + " via punycode: " + e;
+        if (protocol.IPV6ADDRESS.test(components.host)) {}
+        //TODO: normalize IPv6 address as per RFC 5952
+
+        //if host component is a domain name
+        else if (options.domainHost || schemeHandler && schemeHandler.domainHost) {
+                //convert IDN via punycode
+                try {
+                    components.host = !options.iri ? punycode.toASCII(components.host.replace(protocol.PCT_ENCODED, pctDecChars).toLowerCase()) : punycode.toUnicode(components.host);
+                } catch (e) {
+                    components.error = components.error || "Host's domain name can not be converted to " + (!options.iri ? "ASCII" : "Unicode") + " via punycode: " + e;
+                }
             }
-        }
     }
     //normalize encoding
     _normalizeComponentEncoding(components, protocol);
@@ -1010,7 +1013,7 @@ function unescapeComponent(str, options) {
     return str && str.toString().replace(!options || !options.iri ? URI_PROTOCOL.PCT_ENCODED : IRI_PROTOCOL.PCT_ENCODED, pctDecChars);
 }
 
-var http = {
+var handler = {
     scheme: "http",
     domainHost: true,
     parse: function parse(components, options) {
@@ -1036,11 +1039,11 @@ var http = {
     }
 };
 
-var https = {
+var handler$1 = {
     scheme: "https",
-    domainHost: http.domainHost,
-    parse: http.parse,
-    serialize: http.serialize
+    domainHost: handler.domainHost,
+    parse: handler.parse,
+    serialize: handler.serialize
 };
 
 var O = {};
@@ -1073,15 +1076,16 @@ function decodeUnreserved(str) {
     var decStr = pctDecChars(str);
     return !decStr.match(UNRESERVED) ? str : decStr;
 }
-var mailto = {
+var handler$2 = {
     scheme: "mailto",
     parse: function parse$$1(components, options) {
-        var to = components.to = components.path ? components.path.split(",") : [];
-        components.path = undefined;
-        if (components.query) {
+        var mailtoComponents = components;
+        var to = mailtoComponents.to = mailtoComponents.path ? mailtoComponents.path.split(",") : [];
+        mailtoComponents.path = undefined;
+        if (mailtoComponents.query) {
             var unknownHeaders = false;
             var headers = {};
-            var hfields = components.query.split("&");
+            var hfields = mailtoComponents.query.split("&");
             for (var x = 0, xl = hfields.length; x < xl; ++x) {
                 var hfield = hfields[x].split("=");
                 switch (hfield[0]) {
@@ -1092,10 +1096,10 @@ var mailto = {
                         }
                         break;
                     case "subject":
-                        components.subject = unescapeComponent(hfield[1], options);
+                        mailtoComponents.subject = unescapeComponent(hfield[1], options);
                         break;
                     case "body":
-                        components.body = unescapeComponent(hfield[1], options);
+                        mailtoComponents.body = unescapeComponent(hfield[1], options);
                         break;
                     default:
                         unknownHeaders = true;
@@ -1103,9 +1107,9 @@ var mailto = {
                         break;
                 }
             }
-            if (unknownHeaders) components.headers = headers;
+            if (unknownHeaders) mailtoComponents.headers = headers;
         }
-        components.query = undefined;
+        mailtoComponents.query = undefined;
         for (var _x2 = 0, _xl2 = to.length; _x2 < _xl2; ++_x2) {
             var addr = to[_x2].split("@");
             addr[0] = unescapeComponent(addr[0]);
@@ -1114,17 +1118,18 @@ var mailto = {
                 try {
                     addr[1] = punycode.toASCII(unescapeComponent(addr[1], options).toLowerCase());
                 } catch (e) {
-                    components.error = components.error || "Email address's domain name can not be converted to ASCII via punycode: " + e;
+                    mailtoComponents.error = mailtoComponents.error || "Email address's domain name can not be converted to ASCII via punycode: " + e;
                 }
             } else {
                 addr[1] = unescapeComponent(addr[1], options).toLowerCase();
             }
             to[_x2] = addr.join("@");
         }
-        return components;
+        return mailtoComponents;
     },
-    serialize: function serialize$$1(components, options) {
-        var to = toArray(components.to);
+    serialize: function serialize$$1(mailtoComponents, options) {
+        var components = mailtoComponents;
+        var to = toArray(mailtoComponents.to);
         if (to) {
             for (var x = 0, xl = to.length; x < xl; ++x) {
                 var toAddr = String(to[x]);
@@ -1141,9 +1146,9 @@ var mailto = {
             }
             components.path = to.join(",");
         }
-        var headers = components.headers = components.headers || {};
-        if (components.subject) headers["subject"] = components.subject;
-        if (components.body) headers["body"] = components.body;
+        var headers = mailtoComponents.headers = mailtoComponents.headers || {};
+        if (mailtoComponents.subject) headers["subject"] = mailtoComponents.subject;
+        if (mailtoComponents.body) headers["body"] = mailtoComponents.body;
         var fields = [];
         for (var name in headers) {
             if (headers[name] !== O[name]) {
@@ -1157,77 +1162,71 @@ var mailto = {
     }
 };
 
-var NID$ = "(?:[0-9A-Za-z][0-9A-Za-z\\-]{1,31})";
-var URN_SCHEME = new RegExp("^urn\\:(" + NID$ + ")$");
 var URN_PARSE = /^([^\:]+)\:(.*)/;
-var URN_EXCLUDED = /[\x00-\x20\\\"\&\<\>\[\]\^\`\{\|\}\~\x7F-\xFF]/g;
 //RFC 2141
-var urn = {
+var handler$3 = {
     scheme: "urn",
     parse: function parse$$1(components, options) {
         var matches = components.path && components.path.match(URN_PARSE);
+        var urnComponents = components;
         if (matches) {
-            var scheme = "urn:" + matches[1].toLowerCase();
-            var schemeHandler = SCHEMES[scheme];
-            //in order to serialize properly,
-            //every URN must have a serializer that calls the URN serializer
-            if (!schemeHandler) {
-                //create fake scheme handler
-                schemeHandler = SCHEMES[scheme] = {
-                    scheme: scheme,
-                    parse: function parse$$1(components, options) {
-                        return components;
-                    },
-                    serialize: SCHEMES["urn"].serialize
-                };
+            var scheme = options.scheme || urnComponents.scheme || "urn";
+            var nid = matches[1].toLowerCase();
+            var nss = matches[2];
+            var urnScheme = scheme + ":" + (options.nid || nid);
+            var schemeHandler = SCHEMES[urnScheme];
+            urnComponents.nid = nid;
+            urnComponents.nss = nss;
+            urnComponents.path = undefined;
+            if (schemeHandler) {
+                urnComponents = schemeHandler.parse(urnComponents, options);
             }
-            components.scheme = scheme;
-            components.path = matches[2];
-            components = schemeHandler.parse(components, options);
         } else {
-            components.error = components.error || "URN can not be parsed.";
+            urnComponents.error = urnComponents.error || "URN can not be parsed.";
         }
-        return components;
+        return urnComponents;
     },
-    serialize: function serialize$$1(components, options) {
-        var scheme = components.scheme || options.scheme;
-        if (scheme && scheme !== "urn") {
-            var matches = scheme.match(URN_SCHEME) || ["urn:" + scheme, scheme];
-            components.scheme = "urn";
-            components.path = matches[1] + ":" + (components.path ? components.path.replace(URN_EXCLUDED, pctEncChar) : "");
+    serialize: function serialize$$1(urnComponents, options) {
+        var scheme = options.scheme || urnComponents.scheme || "urn";
+        var nid = urnComponents.nid;
+        var urnScheme = scheme + ":" + (options.nid || nid);
+        var schemeHandler = SCHEMES[urnScheme];
+        if (schemeHandler) {
+            urnComponents = schemeHandler.serialize(urnComponents, options);
         }
-        return components;
+        var uriComponents = urnComponents;
+        var nss = urnComponents.nss;
+        uriComponents.path = (nid || options.nid) + ":" + nss;
+        return uriComponents;
     }
 };
 
 var UUID = /^[0-9A-Fa-f]{8}(?:\-[0-9A-Fa-f]{4}){3}\-[0-9A-Fa-f]{12}$/;
 //RFC 4122
-var uuid = {
+var handler$4 = {
     scheme: "urn:uuid",
-    parse: function parse$$1(components, options) {
-        if (!options.tolerant && (!components.path || !components.path.match(UUID))) {
-            components.error = components.error || "UUID is not valid.";
+    parse: function parse(urnComponents, options) {
+        var uuidComponents = urnComponents;
+        uuidComponents.uuid = uuidComponents.nss;
+        uuidComponents.nss = undefined;
+        if (!options.tolerant && (!uuidComponents.uuid || !uuidComponents.uuid.match(UUID))) {
+            uuidComponents.error = uuidComponents.error || "UUID is not valid.";
         }
-        return components;
+        return uuidComponents;
     },
-    serialize: function serialize$$1(components, options) {
-        //ensure UUID is valid
-        if (!options.tolerant && (!components.path || !components.path.match(UUID))) {
-            //invalid UUIDs can not have this scheme
-            components.scheme = undefined;
-        } else {
-            //normalize UUID
-            components.path = (components.path || "").toLowerCase();
-        }
-        return SCHEMES["urn"].serialize(components, options);
+    serialize: function serialize(uuidComponents, options) {
+        var urnComponents = uuidComponents;
+        //normalize UUID
+        urnComponents.nss = (uuidComponents.uuid || "").toLowerCase();
+        return urnComponents;
     }
 };
 
-SCHEMES["http"] = http;
-SCHEMES["https"] = https;
-SCHEMES["mailto"] = mailto;
-SCHEMES["urn"] = urn;
-SCHEMES["urn:uuid"] = uuid;
+SCHEMES[handler.scheme] = handler;
+SCHEMES[handler$1.scheme] = handler$1;
+SCHEMES[handler$2.scheme] = handler$2;
+SCHEMES[handler$3.scheme] = handler$3;
+SCHEMES[handler$4.scheme] = handler$4;
 
 exports.SCHEMES = SCHEMES;
 exports.pctEncChar = pctEncChar;

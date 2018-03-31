@@ -111,6 +111,26 @@ URI.js supports inserting custom [scheme](http://en.wikipedia.org/wiki/URI_schem
 		}
 	}) === "mailto:alpha@example.com?cc=charlie@example.com&subject=REMOVE&body=Please%20remove%20me"
 
+### URN Support
+
+	URI.parse("urn:example:foo");
+	//returns:
+	//{
+	//	scheme : "urn",
+	//	nid : "example",
+	//	nss : "foo",
+	//}
+
+#### URN UUID Support
+
+	URI.parse("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6");
+	//returns:
+	//{
+	//	scheme : "urn",
+	//	nid : "example",
+	//	uuid : "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+	//}
+
 ## Usage
 
 To load in a browser, use the following tag:
@@ -133,11 +153,19 @@ Or you can load just what you need using named exports:
 
 	import { parse, serialize, resolve, resolveComponents, normalize, equal, removeDotSegments, pctEncChar, pctDecChars, escapeComponent, unescapeComponent } from "uri-js";
 
-## Breaking changes from 2.x
+## Breaking changes
+
+### Breaking changes from 3.x
+
+URN parsing has been completely changed to better align with the specification. Scheme is now always `urn`, but has two new properties: `nid` which contains the Namspace Identifier, and `nss` which contains the Namespace Specific String. The `nss` property will be removed by higher order scheme handlers, such as the UUID URN scheme handler.
+
+The UUID of a URN can now be found in the `uuid` property.
+
+### Breaking changes from 2.x
 
 URI validation has been removed as it was slow, exposed a vulnerabilty, and was generally not useful.
 
-## Breaking changes from 1.x
+### Breaking changes from 1.x
 
 The `errors` array on parsed components is now an `error` string.
 

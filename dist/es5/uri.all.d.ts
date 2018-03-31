@@ -18,10 +18,10 @@ export interface URIOptions {
     unicodeSupport?: boolean;
     domainHost?: boolean;
 }
-export interface URISchemeHandler {
+export interface URISchemeHandler<Components extends URIComponents = URIComponents, Options extends URIOptions = URIOptions, ParentComponents extends URIComponents = URIComponents> {
     scheme: string;
-    parse(components: URIComponents, options: URIOptions): URIComponents;
-    serialize(components: URIComponents, options: URIOptions): URIComponents;
+    parse(components: ParentComponents, options: Options): Components;
+    serialize(components: Components, options: Options): ParentComponents;
     unicodeSupport?: boolean;
     domainHost?: boolean;
     absolutePath?: boolean;
