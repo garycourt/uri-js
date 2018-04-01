@@ -40,34 +40,34 @@ import punycode from "punycode";
 import { toUpperCase, typeOf } from "./util";
 
 export interface URIComponents {
-	scheme?:string,
-	userinfo?:string,
-	host?:string,
-	port?:number|string,
-	path?:string,
-	query?:string,
-	fragment?:string,
-	reference?:string,
-	error?:string
+	scheme?:string;
+	userinfo?:string;
+	host?:string;
+	port?:number|string;
+	path?:string;
+	query?:string;
+	fragment?:string;
+	reference?:string;
+	error?:string;
 }
 
 export interface URIOptions {
-	scheme?:string,
-	reference?:string,
-	tolerant?:boolean,
-	absolutePath?:boolean,
-	iri?:boolean,
-	unicodeSupport?:boolean,
-	domainHost?:boolean
+	scheme?:string;
+	reference?:string;
+	tolerant?:boolean;
+	absolutePath?:boolean;
+	iri?:boolean;
+	unicodeSupport?:boolean;
+	domainHost?:boolean;
 }
 
 export interface URISchemeHandler<Components extends URIComponents = URIComponents, Options extends URIOptions = URIOptions, ParentComponents extends URIComponents = URIComponents> {
-	scheme:string,
-	parse(components:ParentComponents, options:Options):Components,
-	serialize(components:Components, options:Options):ParentComponents,
-	unicodeSupport?:boolean,
-	domainHost?:boolean,
-	absolutePath?:boolean
+	scheme:string;
+	parse(components:ParentComponents, options:Options):Components;
+	serialize(components:Components, options:Options):ParentComponents;
+	unicodeSupport?:boolean;
+	domainHost?:boolean;
+	absolutePath?:boolean;
 }
 
 export interface URIRegExps {
@@ -82,9 +82,8 @@ export interface URIRegExps {
 	UNRESERVED : RegExp,
 	OTHER_CHARS : RegExp,
 	PCT_ENCODED : RegExp,
+	IPV4ADDRESS : RegExp,
 	IPV6ADDRESS : RegExp,
-	IP_LITERAL : RegExp,
-	IPV6ADDRZ : RegExp
 }
 
 export const SCHEMES:{[scheme:string]:URISchemeHandler} = {};
@@ -157,6 +156,75 @@ function _normalizeComponentEncoding(components:URIComponents, protocol:URIRegEx
 	return components;
 };
 
+function _stripLeadingZeros(str:string):string {
+	return str.replace(/^0*(.*)/, "$1") || "0";
+}
+
+function _normalizeIPv4(host:string, protocol:URIRegExps):string {
+	const matches = host.match(protocol.IPV4ADDRESS) || [];
+	const [, address] = matches;
+	
+	if (address) {
+		return address.split(".").map(_stripLeadingZeros).join(".");
+	} else {
+		return host;
+	}
+}
+
+function _normalizeIPv6(host:string, protocol:URIRegExps):string {
+	const matches = host.match(protocol.IPV6ADDRESS) || [];
+	const [, address, zone] = matches;
+
+	if (address) {
+		const [last, first] = address.toLowerCase().split('::').reverse();
+		const firstFields = first ? first.split(":").map(_stripLeadingZeros) : [];
+		const lastFields = last.split(":").map(_stripLeadingZeros);
+		const isLastFieldIPv4Address = protocol.IPV4ADDRESS.test(lastFields[lastFields.length - 1]);
+		const fieldCount = isLastFieldIPv4Address ? 7 : 8;
+		const lastFieldsStart = lastFields.length - fieldCount;
+		const fields = Array<string>(fieldCount);
+
+		for (let x = 0; x < fieldCount; ++x) {
+			fields[x] = firstFields[x] || lastFields[lastFieldsStart + x] || '';
+		}
+
+		if (isLastFieldIPv4Address) {
+			fields[fieldCount - 1] = _normalizeIPv4(fields[fieldCount - 1], protocol);
+		}
+
+		const allZeroFields = fields.reduce<Array<{index:number,length:number}>>((acc, field, index) => {
+			if (!field || field === "0") {
+				const lastLongest = acc[acc.length - 1];
+				if (lastLongest && lastLongest.index + lastLongest.length === index) {
+					lastLongest.length++;
+				} else {
+					acc.push({ index, length : 1 });
+				}
+			}
+			return acc;
+		}, []);
+
+		const longestZeroFields = allZeroFields.sort((a, b) => b.length - a.length)[0];
+
+		let newHost:string;
+		if (longestZeroFields && longestZeroFields.length > 1) {
+			const newFirst = fields.slice(0, longestZeroFields.index) ;
+			const newLast = fields.slice(longestZeroFields.index + longestZeroFields.length);
+			newHost = newFirst.join(":") + "::" + newLast.join(":");
+		} else {
+			newHost = fields.join(":");
+		}
+
+		if (zone) {
+			newHost += "%" + zone;
+		}
+
+		return newHost;
+	} else {
+		return host;
+	}
+}
+
 const URI_PARSE = /^(?:([^:\/?#]+):)?(?:\/\/((?:([^\/?#@]*)@)?(\[[^\/?#\]]+\]|[^\/?#:]*)(?:\:(\d*))?))?([^?#]*)(?:\?([^#]*))?(?:#((?:.|\n|\r)*))?/i;
 const NO_MATCH_IS_UNDEFINED = (<RegExpMatchArray>("").match(/(){0}/))[1] === undefined;
 
@@ -200,8 +268,8 @@ export function parse(uriString:string, options:URIOptions = {}):URIComponents {
 		}
 
 		if (components.host) {
-			//strip brackets from IPv6 hosts, unescape zone separator
-			components.host = components.host.replace(protocol.IP_LITERAL, "$1").replace(protocol.IPV6ADDRZ, "$1%$2");
+			//normalize IP hosts
+			components.host = _normalizeIPv6(_normalizeIPv4(components.host, protocol), protocol);
 		}
 
 		//determine reference type
@@ -262,8 +330,8 @@ function _recomposeAuthority(components:URIComponents, options:URIOptions):strin
 	}
 
 	if (components.host !== undefined) {
-		//ensure IPv6 addresses are bracketed, and zone separator escaped
-		uriTokens.push(String(components.host).replace(protocol.IPV6ADDRZ, "$1%25$2").replace(protocol.IPV6ADDRESS, "[$1]"));
+		//normalize IP hosts, add brackets and escape zone separator for IPv6
+		uriTokens.push(_normalizeIPv6(_normalizeIPv4(String(components.host), protocol), protocol).replace(protocol.IPV6ADDRESS, (_, $1, $2) => "[" + $1 + ($2 ? "%25" + $2 : "") + "]"));
 	}
 
 	if (typeof components.port === "number") {

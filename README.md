@@ -1,13 +1,13 @@
 # URI.js
 
 URI.js is an [RFC 3986](http://www.ietf.org/rfc/rfc3986.txt) compliant, scheme extendable URI parsing/validating/resolving library for all JavaScript environments (browsers, Node.js, etc).
-It is also compliant with the IRI ([RFC 3987](http://www.ietf.org/rfc/rfc3987.txt)), IDNA ([RFC 5890](http://www.ietf.org/rfc/rfc5890.txt)), and IPv6 Zone Identifier ([RFC 6874](http://www.ietf.org/rfc/rfc6874.txt)) specifications.
+It is also compliant with the IRI ([RFC 3987](http://www.ietf.org/rfc/rfc3987.txt)), IDNA ([RFC 5890](http://www.ietf.org/rfc/rfc5890.txt)), IPv6 Address ([RFC 5952](http://www.ietf.org/rfc/rfc5952.txt)), IPv6 Zone Identifier ([RFC 6874](http://www.ietf.org/rfc/rfc6874.txt)) specifications.
 
-URI.js has an extensive test suite, and works in all (Node.js, web) environments. It weighs in at 5.6kb (gzipped, 15kb deflated).
+URI.js has an extensive test suite, and works in all (Node.js, web) environments. It weighs in at 6.2kb (gzipped, 16kb deflated).
 
 ## API
 
-### Parsing & Validating
+### Parsing
 
 	URI.parse("uri://user:pass@example.com:123/one/two.three?q1=a1&q2=a2#body");
 	//returns:
@@ -37,8 +37,15 @@ URI.js has an extensive test suite, and works in all (Node.js, web) environments
 
 	URI.equal("example://a/b/c/%7Bfoo%7D", "eXAMPLE://a/./b/../b/%63/%7bfoo%7d") === true
 
-### IPv6 Support
+### IP Support
 
+	//IPv4 normalization
+	URI.normalize("//192.068.001.000") === "//192.68.1.0"
+
+	//IPv6 normalization
+	URI.normalize("//[2001:0:0DB8::0:0001]") === "//[2001:0:db8::1]"
+
+	//IPv6 zone identifier support
 	URI.parse("//[2001:db8::7%25en1]");
 	//returns:
 	//{

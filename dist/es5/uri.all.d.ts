@@ -38,9 +38,8 @@ export interface URIRegExps {
     UNRESERVED: RegExp;
     OTHER_CHARS: RegExp;
     PCT_ENCODED: RegExp;
+    IPV4ADDRESS: RegExp;
     IPV6ADDRESS: RegExp;
-    IP_LITERAL: RegExp;
-    IPV6ADDRZ: RegExp;
 }
 export declare const SCHEMES: {
     [scheme: string]: URISchemeHandler;

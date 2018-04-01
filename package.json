@@ -1,6 +1,6 @@
 {
   "name": "uri-js",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "description": "An RFC 3986/3987 compliant, scheme extendable URI/IRI parsing/validating/resolving library for JavaScript.",
   "main": "dist/es5/uri.all.js",
   "types": "dist/es5/uri.all.d.ts",
@@ -25,6 +25,7 @@
     "IRI",
     "IDN",
     "URN",
+    "UUID",
     "HTTP",
     "HTTPS",
     "MAILTO",
@@ -36,6 +37,7 @@
     "RFC2141",
     "RFC4122",
     "RFC4291",
+    "RFC5952",
     "RFC6068",
     "RFC6874"
   ],
