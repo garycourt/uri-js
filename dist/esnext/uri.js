@@ -35,7 +35,7 @@
 import URI_PROTOCOL from "./regexps-uri";
 import IRI_PROTOCOL from "./regexps-iri";
 import punycode from "punycode";
-import { toUpperCase, typeOf } from "./util";
+import { toUpperCase, typeOf, assign } from "./util";
 export const SCHEMES = {};
 export function pctEncChar(chr) {
     const c = chr.charCodeAt(0);
@@ -439,7 +439,8 @@ export function resolveComponents(base, relative, options = {}, skipNormalizatio
 }
 ;
 export function resolve(baseURI, relativeURI, options) {
-    return serialize(resolveComponents(parse(baseURI, options), parse(relativeURI, options), options, true), options);
+    const schemelessOptions = assign({ scheme: 'null' }, options);
+    return serialize(resolveComponents(parse(baseURI, schemelessOptions), parse(relativeURI, schemelessOptions), schemelessOptions, true), schemelessOptions);
 }
 ;
 export function normalize(uri, options) {

@@ -567,6 +567,14 @@ if (URI.SCHEMES["urn"]) {
 		strictEqual(URI.equal("urn:foo:a123%2C456", "URN:FOO:a123%2c456"), true);
 	});
 
+	test("URN Resolving", function () {
+		//example from epoberezkin
+		strictEqual(URI.resolve('', 'urn:some:ip:prop'), 'urn:some:ip:prop');
+		strictEqual(URI.resolve('#', 'urn:some:ip:prop'), 'urn:some:ip:prop');
+		strictEqual(URI.resolve('urn:some:ip:prop', 'urn:some:ip:prop'), 'urn:some:ip:prop');
+		strictEqual(URI.resolve('urn:some:other:prop', 'urn:some:ip:prop'), 'urn:some:ip:prop');
+	});
+
 	//
 	// URN UUID
 	//

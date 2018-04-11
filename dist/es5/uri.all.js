@@ -1,4 +1,4 @@
-/** @license URI.js v4.1.0 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js */
+/** @license URI.js v4.2.1 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js */
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -33,6 +33,15 @@ function toUpperCase(str) {
 }
 function toArray(obj) {
     return obj !== undefined && obj !== null ? obj instanceof Array ? obj : typeof obj.length !== "number" || obj.split || obj.setInterval || obj.call ? [obj] : Array.prototype.slice.call(obj) : [];
+}
+function assign(target, source) {
+    var obj = target;
+    if (source) {
+        for (var key in source) {
+            obj[key] = source[key];
+        }
+    }
+    return obj;
 }
 
 function buildExps(isIRI) {
@@ -1111,7 +1120,8 @@ function resolveComponents(base, relative) {
 }
 
 function resolve(baseURI, relativeURI, options) {
-    return serialize(resolveComponents(parse(baseURI, options), parse(relativeURI, options), options, true), options);
+    var schemelessOptions = assign({ scheme: 'null' }, options);
+    return serialize(resolveComponents(parse(baseURI, schemelessOptions), parse(relativeURI, schemelessOptions), schemelessOptions, true), schemelessOptions);
 }
 
 function normalize(uri, options) {
