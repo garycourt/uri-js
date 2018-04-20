@@ -4,7 +4,8 @@
   "description": "An RFC 3986/3987 compliant, scheme extendable URI/IRI parsing/validating/resolving library for JavaScript.",
   "main": "dist/es5/uri.all.js",
   "types": "dist/es5/uri.all.d.ts",
-  "module": "dist/esnext/index.js",
+  "module": "dist/es5/uri.all.js",
+  "jsnext:main": "dist/esnext/index.js",
   "directories": {
     "test": "tests"
   },
