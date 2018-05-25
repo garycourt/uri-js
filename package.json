@@ -1,10 +1,9 @@
 {
   "name": "uri-js",
-  "version": "4.2.1",
+  "version": "4.2.2",
   "description": "An RFC 3986/3987 compliant, scheme extendable URI/IRI parsing/validating/resolving library for JavaScript.",
   "main": "dist/es5/uri.all.js",
   "types": "dist/es5/uri.all.d.ts",
-  "module": "dist/esnext/index.js",
   "directories": {
     "test": "tests"
   },
