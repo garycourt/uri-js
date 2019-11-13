@@ -242,11 +242,21 @@ export function parse(uriString, options = {}) {
                 }
             }
             //convert IRI -> URI
-            _normalizeComponentEncoding(components, URI_PROTOCOL);
+            if (schemeHandler && schemeHandler.normalizeComponentEncoding) {
+                schemeHandler.normalizeComponentEncoding(components, URI_PROTOCOL);
+            }
+            else {
+                _normalizeComponentEncoding(components, URI_PROTOCOL);
+            }
         }
         else {
             //normalize encodings
-            _normalizeComponentEncoding(components, protocol);
+            if (schemeHandler && schemeHandler.normalizeComponentEncoding) {
+                schemeHandler.normalizeComponentEncoding(components, protocol);
+            }
+            else {
+                _normalizeComponentEncoding(components, protocol);
+            }
         }
         //perform scheme specific parsing
         if (schemeHandler && schemeHandler.parse) {
@@ -338,7 +348,12 @@ export function serialize(components, options = {}) {
         }
     }
     //normalize encoding
-    _normalizeComponentEncoding(components, protocol);
+    if (schemeHandler && schemeHandler.normalizeComponentEncoding) {
+        schemeHandler.normalizeComponentEncoding(components, protocol);
+    }
+    else {
+        _normalizeComponentEncoding(components, protocol);
+    }
     if (options.reference !== "suffix" && components.scheme) {
         uriTokens.push(components.scheme);
         uriTokens.push(":");

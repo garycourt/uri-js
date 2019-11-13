@@ -1,4 +1,4 @@
-/** @license URI.js v4.2.1 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js */
+/** @license URI.js v4.2.2 (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js */
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
 	typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -933,10 +933,18 @@ function parse(uriString) {
                 }
             }
             //convert IRI -> URI
-            _normalizeComponentEncoding(components, URI_PROTOCOL);
+            if (schemeHandler && schemeHandler.normalizeComponentEncoding) {
+                schemeHandler.normalizeComponentEncoding(components, URI_PROTOCOL);
+            } else {
+                _normalizeComponentEncoding(components, URI_PROTOCOL);
+            }
         } else {
             //normalize encodings
-            _normalizeComponentEncoding(components, protocol);
+            if (schemeHandler && schemeHandler.normalizeComponentEncoding) {
+                schemeHandler.normalizeComponentEncoding(components, protocol);
+            } else {
+                _normalizeComponentEncoding(components, protocol);
+            }
         }
         //perform scheme specific parsing
         if (schemeHandler && schemeHandler.parse) {
@@ -1023,7 +1031,11 @@ function serialize(components) {
             }
     }
     //normalize encoding
-    _normalizeComponentEncoding(components, protocol);
+    if (schemeHandler && schemeHandler.normalizeComponentEncoding) {
+        schemeHandler.normalizeComponentEncoding(components, protocol);
+    } else {
+        _normalizeComponentEncoding(components, protocol);
+    }
     if (options.reference !== "suffix" && components.scheme) {
         uriTokens.push(components.scheme);
         uriTokens.push(":");

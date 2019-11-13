@@ -18,14 +18,6 @@ export interface URIOptions {
     unicodeSupport?: boolean;
     domainHost?: boolean;
 }
-export interface URISchemeHandler<Components extends URIComponents = URIComponents, Options extends URIOptions = URIOptions, ParentComponents extends URIComponents = URIComponents> {
-    scheme: string;
-    parse(components: ParentComponents, options: Options): Components;
-    serialize(components: Components, options: Options): ParentComponents;
-    unicodeSupport?: boolean;
-    domainHost?: boolean;
-    absolutePath?: boolean;
-}
 export interface URIRegExps {
     NOT_SCHEME: RegExp;
     NOT_USERINFO: RegExp;
@@ -40,6 +32,15 @@ export interface URIRegExps {
     PCT_ENCODED: RegExp;
     IPV4ADDRESS: RegExp;
     IPV6ADDRESS: RegExp;
+}
+export interface URISchemeHandler<Components extends URIComponents = URIComponents, Options extends URIOptions = URIOptions, ParentComponents extends URIComponents = URIComponents> {
+    scheme: string;
+    parse(components: ParentComponents, options: Options): Components;
+    serialize(components: Components, options: Options): ParentComponents;
+    normalizeComponentEncoding?(components: Components, options: URIRegExps): ParentComponents;
+    unicodeSupport?: boolean;
+    domainHost?: boolean;
+    absolutePath?: boolean;
 }
 export declare const SCHEMES: {
     [scheme: string]: URISchemeHandler;
