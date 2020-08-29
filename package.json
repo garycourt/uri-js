@@ -7,6 +7,9 @@
   "directories": {
     "test": "tests"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build:esnext": "node_modules/.bin/tsc",
     "build:es5": "node_modules/.bin/rollup -c && cp dist/esnext/uri.d.ts dist/es5/uri.all.d.ts && npm run build:es5:fix-sourcemap",
