@@ -295,6 +295,13 @@ test("URI Serialization", function () {
 	};
 	strictEqual(URI.serialize(components), "uri://foo:bar@example.com:1/path?query#fragment", "All Components");
 
+	components = {
+		scheme : "uri",
+		host : "example.com",
+		port : "9000",
+	};
+	strictEqual(URI.serialize(components), "uri://example.com:9000", "String port");
+
 	strictEqual(URI.serialize({path:"//path"}), "/%2Fpath", "Double slash path");
 	strictEqual(URI.serialize({path:"foo:bar"}), "foo%3Abar", "Colon path");
 	strictEqual(URI.serialize({path:"?query"}), "%3Fquery", "Query path");
