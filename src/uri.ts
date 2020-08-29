@@ -334,9 +334,9 @@ function _recomposeAuthority(components:URIComponents, options:URIOptions):strin
 		uriTokens.push(_normalizeIPv6(_normalizeIPv4(String(components.host), protocol), protocol).replace(protocol.IPV6ADDRESS, (_, $1, $2) => "[" + $1 + ($2 ? "%25" + $2 : "") + "]"));
 	}
 
-	if (typeof components.port === "number") {
+	if (typeof components.port === "number" || typeof components.port === "string") {
 		uriTokens.push(":");
-		uriTokens.push(components.port.toString(10));
+		uriTokens.push(String(components.port));
 	}
 
 	return uriTokens.length ? uriTokens.join("") : undefined;
