@@ -1,6 +1,6 @@
 {
   "name": "uri-js",
-  "version": "4.3.0",
+  "version": "4.4.0",
   "description": "An RFC 3986/3987 compliant, scheme extendable URI/IRI parsing/validating/resolving library for JavaScript.",
   "main": "dist/es5/uri.all.js",
   "types": "dist/es5/uri.all.d.ts",
@@ -21,6 +21,7 @@
     "build:es5:fix-sourcemap": "sorcery -i dist/es5/uri.all.js",
     "build:es5:min": "uglifyjs dist/es5/uri.all.js --support-ie8 --output dist/es5/uri.all.min.js --in-source-map dist/es5/uri.all.js.map --source-map uri.all.min.js.map --comments --compress --mangle --pure-funcs merge subexp && mv uri.all.min.js.map dist/es5/ && cp dist/es5/uri.all.d.ts dist/es5/uri.all.min.d.ts",
     "build": "npm run build:esnext && npm run build:es5 && npm run build:es5:min",
+    "clean": "rm -rf dist",
     "test": "mocha -u mocha-qunit-ui dist/es5/uri.all.js tests/tests.js"
   },
   "repository": {
@@ -35,6 +36,8 @@
     "UUID",
     "HTTP",
     "HTTPS",
+    "WS",
+    "WSS",
     "MAILTO",
     "RFC3986",
     "RFC3987",
@@ -46,6 +49,7 @@
     "RFC4291",
     "RFC5952",
     "RFC6068",
+    "RFC6455",
     "RFC6874"
   ],
   "author": "Gary Court <gary.court@gmail.com>",

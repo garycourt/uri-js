@@ -3,7 +3,7 @@
 URI.js is an [RFC 3986](http://www.ietf.org/rfc/rfc3986.txt) compliant, scheme extendable URI parsing/validating/resolving library for all JavaScript environments (browsers, Node.js, etc).
 It is also compliant with the IRI ([RFC 3987](http://www.ietf.org/rfc/rfc3987.txt)), IDNA ([RFC 5890](http://www.ietf.org/rfc/rfc5890.txt)), IPv6 Address ([RFC 5952](http://www.ietf.org/rfc/rfc5952.txt)), IPv6 Zone Identifier ([RFC 6874](http://www.ietf.org/rfc/rfc6874.txt)) specifications.
 
-URI.js has an extensive test suite, and works in all (Node.js, web) environments. It weighs in at 6.2kb (gzipped, 16kb deflated).
+URI.js has an extensive test suite, and works in all (Node.js, web) environments. It weighs in at 6.4kb (gzipped, 17kb deflated).
 
 ## API
 
@@ -101,9 +101,23 @@ URI.js supports inserting custom [scheme](http://en.wikipedia.org/wiki/URI_schem
 *	urn \[[RFC 2141](http://www.ietf.org/rfc/rfc2141.txt)\]
 *	urn:uuid \[[RFC 4122](http://www.ietf.org/rfc/rfc4122.txt)\]
 
-### HTTP Support
+### HTTP/HTTPS Support
 
 	URI.equal("HTTP://ABC.COM:80", "http://abc.com/") === true
+	URI.equal("https://abc.com", "HTTPS://ABC.COM:443/") === true
+
+### WS/WSS Support
+
+	URI.parse("wss://example.com/foo?bar=baz");
+	//returns:
+	//{
+	//	scheme : "wss",
+	//	host: "example.com",
+	//	resourceName: "/foo?bar=baz",
+	//	secure: true,
+	//}
+
+	URI.equal("WS://ABC.COM:80/chat#one", "ws://abc.com/chat") === true
 
 ### Mailto Support
 
@@ -152,9 +166,11 @@ To load in a browser, use the following tag:
 
 	<script type="text/javascript" src="uri-js/dist/es5/uri.all.min.js"></script>
 
-To load in a CommonJS (Node.js) environment, first install with npm by running on the command line:
+To load in a CommonJS/Module environment, first install with npm/yarn by running on the command line:
 
 	npm install uri-js
+	# OR
+	yarn add uri-js
 
 Then, in your code, load it using:
 

@@ -15,8 +15,10 @@ const handler:URISchemeHandler = {
 	},
 
 	serialize : function (components:URIComponents, options:URIOptions):URIComponents {
+		const secure = String(components.scheme).toLowerCase() === "https";
+
 		//normalize the default port
-		if (components.port === (String(components.scheme).toLowerCase() !== "https" ? 80 : 443) || components.port === "") {
+		if (components.port === (secure ? 443 : 80) || components.port === "") {
 			components.port = undefined;
 		}
 		
