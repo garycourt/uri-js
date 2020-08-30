@@ -97,6 +97,8 @@ URI.js supports inserting custom [scheme](http://en.wikipedia.org/wiki/URI_schem
 
 *	http \[[RFC 2616](http://www.ietf.org/rfc/rfc2616.txt)\]
 *	https \[[RFC 2818](http://www.ietf.org/rfc/rfc2818.txt)\]
+*	ws \[[RFC 6455](http://www.ietf.org/rfc/rfc6455.txt)\]
+*	wss \[[RFC 6455](http://www.ietf.org/rfc/rfc6455.txt)\]
 *	mailto \[[RFC 6068](http://www.ietf.org/rfc/rfc6068.txt)\]
 *	urn \[[RFC 2141](http://www.ietf.org/rfc/rfc2141.txt)\]
 *	urn:uuid \[[RFC 4122](http://www.ietf.org/rfc/rfc4122.txt)\]
