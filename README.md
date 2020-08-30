@@ -158,7 +158,7 @@ URI.js supports inserting custom [scheme](http://en.wikipedia.org/wiki/URI_schem
 	//returns:
 	//{
 	//	scheme : "urn",
-	//	nid : "example",
+	//	nid : "uuid",
 	//	uuid : "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
 	//}
 
