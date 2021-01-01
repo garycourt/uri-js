@@ -1,32 +1,30 @@
-import resolve from 'rollup-plugin-node-resolve';
-import babel from 'rollup-plugin-babel';
+import nodeResolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import nodePolyfills from 'rollup-plugin-node-polyfills';
+import babel from '@rollup/plugin-babel';
 const packageJson = require('./package.json');
 
 export default {
-	entry : "dist/esnext/index.js",
-	format : "umd",
-	moduleName : "URI",
-	plugins: [
-		resolve({
-			module: true,
-			jsnext: true,
-			preferBuiltins: false
+	input : "dist/esnext/index.js",
+      	plugins: [
+		commonjs({
+			transformMixedEsModules: true
 		}),
-
-		babel({
-		  "presets": [
-		    ["latest", {
-		      "es2015": {
-		        "modules": false
-		      }
-		    }]
-		  ],
-		  "plugins": ["external-helpers"],
-		  "externalHelpers": false
-		}
-)
-	],
-	dest  : "dist/es5/uri.all.js",
-	sourceMap: true,
-	banner: "/** @license URI.js v" + packageJson.version + " (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js */"
+      		nodeResolve({
+				browser: true,
+      			preferBuiltins: false
+      		}),
+      		babel({
+      		  "plugins": ["@babel/external-helpers"],
+		  "babelHelpers": "external"
+      		}),
+		nodePolyfills()
+      	],
+	output : {
+        	format : "umd",
+        	name : "URI",
+        	file : "dist/es5/uri.all.js",
+        	sourcemap : true,
+        	banner : "/** @license URI.js v" + packageJson.version + " (c) 2011 Gary Court. License: http://github.com/garycourt/uri-js */"
+	}
 }
