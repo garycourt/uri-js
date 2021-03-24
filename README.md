@@ -69,7 +69,7 @@ All of the above functions can accept an additional options argument that is an 
 
 *	`reference` (string)
 
-	If set to `"suffix"`, it indicates that the URI is in the suffix format, and the validator will use the option's `scheme` property to determine the URI's scheme.
+	If set to `"suffix"`, it indicates that the URI is in the suffix format and the parser will use the option's `scheme` property to determine the URI's scheme.
 
 *	`tolerant` (boolean, false)
 
