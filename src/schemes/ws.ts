@@ -23,7 +23,7 @@ const handler:URISchemeHandler = {
 
 		//construct resouce name
 		wsComponents.resourceName = (wsComponents.path || '/') + (wsComponents.query ? '?' + wsComponents.query : '');
-		wsComponents.path = undefined;
+		wsComponents.path = (wsComponents.path || '/');
 		wsComponents.query = undefined;
 
 		return wsComponents;
