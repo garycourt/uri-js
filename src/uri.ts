@@ -156,29 +156,79 @@ function _normalizeComponentEncoding(components:URIComponents, protocol:URIRegEx
 	return components;
 };
 
-function _stripLeadingZeros(str:string):string {
-	return str.replace(/^0*(.*)/, "$1") || "0";
+function _stripLeadingZeros(str:string, token:string, outputArray=false) : string | string[] {
+	const outArray:string[]=[];
+	let out = ''
+	let temp = ''
+	let skip = true
+	const l = str.length
+	for (var i=0; i <l ; i++) {
+		const c = str[i];
+		if (c==='0' && skip) {
+			if((i+1 <= l && str[i+1]===token) || i+1==l) {
+				if(outputArray) {
+					temp+=c
+				}else{
+					out += c
+				}
+				skip = false
+			}
+		} else {
+			if (c === token) {
+				skip = true
+				if(temp.length){
+					outArray.push(temp)
+					temp=''
+				}
+			} else {
+				skip = false
+			}
+			if(outputArray) {
+				if(c !== token) {
+				temp+=c
+				}
+			}else{
+				out += c
+			}
+		}
+	}
+	if(temp.length) {
+		outArray.push(temp)
+	}
+	return outputArray ? outArray : out;
 }
 
 function _normalizeIPv4(host:string, protocol:URIRegExps):string {
+	if (findToken(host,".")<3) { return host }
 	const matches = host.match(protocol.IPV4ADDRESS) || [];
 	const [, address] = matches;
 	
 	if (address) {
-		return address.split(".").map(_stripLeadingZeros).join(".");
+		return _stripLeadingZeros(address,'.',false) as string;
 	} else {
 		return host;
 	}
 }
 
+function findToken(str:string,token:string):number{
+	let ind = 0
+	for(var i=0;i<str.length;i++) {
+		if(str[i] === token){
+			ind++;
+		}
+	}
+	return ind
+}
+
 function _normalizeIPv6(host:string, protocol:URIRegExps):string {
+	if (findToken(host,":")<2) { return host }
 	const matches = host.match(protocol.IPV6ADDRESS) || [];
 	const [, address, zone] = matches;
 
 	if (address) {
 		const [last, first] = address.toLowerCase().split('::').reverse();
-		const firstFields = first ? first.split(":").map(_stripLeadingZeros) : [];
-		const lastFields = last.split(":").map(_stripLeadingZeros);
+		const firstFields = first ? _stripLeadingZeros(first,":",true) : [];
+		const lastFields = _stripLeadingZeros(last,":",true);
 		const isLastFieldIPv4Address = protocol.IPV4ADDRESS.test(lastFields[lastFields.length - 1]);
 		const fieldCount = isLastFieldIPv4Address ? 7 : 8;
 		const lastFieldsStart = lastFields.length - fieldCount;
@@ -231,11 +281,11 @@ const NO_MATCH_IS_UNDEFINED = (<RegExpMatchArray>("").match(/(){0}/))[1] === und
 export function parse(uriString:string, options:URIOptions = {}):URIComponents {
 	const components:URIComponents = {};
 	const protocol = (options.iri !== false ? IRI_PROTOCOL : URI_PROTOCOL);
-
+	
 	if (options.reference === "suffix") uriString = (options.scheme ? options.scheme + ":" : "") + "//" + uriString;
 
 	const matches = uriString.match(URI_PARSE);
-
+	
 	if (matches) {
 		if (NO_MATCH_IS_UNDEFINED) {
 			//store each component
