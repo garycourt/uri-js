@@ -157,7 +157,7 @@ function _normalizeComponentEncoding(components:URIComponents, protocol:URIRegEx
 };
 
 function _stripLeadingZeros(str:string, token:string, outputArray=false) : string | string[] {
-	const outArray:string[]=[];
+	const outArray:string[] = [];
 	let out = ''
 	let temp = ''
 	let skip = true
@@ -183,11 +183,11 @@ function _stripLeadingZeros(str:string, token:string, outputArray=false) : strin
 			} else {
 				skip = false
 			}
-			if(outputArray) {
-				if(c !== token) {
+			if (outputArray) {
+				if (c !== token) {
 				temp+=c
 				}
-			}else{
+			} else {
 				out += c
 			}
 		}
