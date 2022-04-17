@@ -295,6 +295,13 @@ test("URI Serialization", function () {
 	};
 	strictEqual(URI.serialize(components), "uri://foo:bar@example.com:1/path?query#fragment", "All Components");
 
+	components = {
+		scheme : "uri",
+		host : "example.com",
+		port : "9000",
+	};
+	strictEqual(URI.serialize(components), "uri://example.com:9000", "String port");
+
 	strictEqual(URI.serialize({path:"//path"}), "/%2Fpath", "Double slash path");
 	strictEqual(URI.serialize({path:"foo:bar"}), "foo%3Abar", "Colon path");
 	strictEqual(URI.serialize({path:"?query"}), "%3Fquery", "Query path");
@@ -769,6 +776,129 @@ if (URI.SCHEMES["mailto"]) {
 		//tests from RFC 6068
 		strictEqual(URI.equal("mailto:addr1@an.example,addr2@an.example", "mailto:?to=addr1@an.example,addr2@an.example"), true);
 		strictEqual(URI.equal("mailto:?to=addr1@an.example,addr2@an.example", "mailto:addr1@an.example?to=addr2@an.example"), true);
+	});
+
+}
+
+if (URI.SCHEMES["ws"]) {
+
+	//module("WS");
+
+	test("WS Parse", function () {
+		var components;
+
+		//example from RFC 6455, Sec 4.1
+		components = URI.parse('ws://example.com/chat');
+		strictEqual(components.error, undefined, "error");
+		strictEqual(components.scheme, "ws", "scheme");
+		strictEqual(components.userinfo, undefined, "userinfo");
+		strictEqual(components.host, "example.com", "host");
+		strictEqual(components.port, undefined, "port");
+		strictEqual(components.path, undefined, "path");
+		strictEqual(components.query, undefined, "query");
+		strictEqual(components.fragment, undefined, "fragment");
+		strictEqual(components.resourceName, "/chat", "resourceName");
+		strictEqual(components.secure, false, "secure");
+
+		components = URI.parse('ws://example.com/foo?bar=baz');
+		strictEqual(components.error, undefined, "error");
+		strictEqual(components.scheme, "ws", "scheme");
+		strictEqual(components.userinfo, undefined, "userinfo");
+		strictEqual(components.host, "example.com", "host");
+		strictEqual(components.port, undefined, "port");
+		strictEqual(components.path, undefined, "path");
+		strictEqual(components.query, undefined, "query");
+		strictEqual(components.fragment, undefined, "fragment");
+		strictEqual(components.resourceName, "/foo?bar=baz", "resourceName");
+		strictEqual(components.secure, false, "secure");
+
+		components = URI.parse('ws://example.com/?bar=baz');
+		strictEqual(components.resourceName, "/?bar=baz", "resourceName");
+	});
+
+	test("WS Serialize", function () {
+		strictEqual(URI.serialize({scheme : "ws"}), "ws:");
+		strictEqual(URI.serialize({scheme : "ws", host: "example.com"}), "ws://example.com");
+		strictEqual(URI.serialize({scheme : "ws", resourceName: '/'}), "ws:");
+		strictEqual(URI.serialize({scheme : "ws", resourceName: '/foo'}), "ws:/foo");
+		strictEqual(URI.serialize({scheme : "ws", resourceName: '/foo?bar'}), "ws:/foo?bar");
+		strictEqual(URI.serialize({scheme : "ws", secure: false}), "ws:");
+		strictEqual(URI.serialize({scheme : "ws", secure: true}), "wss:");
+		strictEqual(URI.serialize({scheme : "ws", host: "example.com", resourceName: '/foo'}), "ws://example.com/foo");
+		strictEqual(URI.serialize({scheme : "ws", host: "example.com", resourceName: '/foo?bar'}), "ws://example.com/foo?bar");
+		strictEqual(URI.serialize({scheme : "ws", host: "example.com", secure: false}), "ws://example.com");
+		strictEqual(URI.serialize({scheme : "ws", host: "example.com", secure: true}), "wss://example.com");
+		strictEqual(URI.serialize({scheme : "ws", host: "example.com", resourceName: '/foo?bar', secure: false}), "ws://example.com/foo?bar");
+		strictEqual(URI.serialize({scheme : "ws", host: "example.com", resourceName: '/foo?bar', secure: true}), "wss://example.com/foo?bar");
+	});
+	
+	test("WS Equal", function () {
+		strictEqual(URI.equal("WS://ABC.COM:80/chat#one", "ws://abc.com/chat"), true);
+	});
+	
+	test("WS Normalize", function () {
+		strictEqual(URI.normalize("ws://example.com:80/foo#hash"), "ws://example.com/foo");
+	});
+}
+
+if (URI.SCHEMES["wss"]) {
+
+	//module("WSS");
+
+	test("WSS Parse", function () {
+		var components;
+
+		//example from RFC 6455, Sec 4.1
+		components = URI.parse('wss://example.com/chat');
+		strictEqual(components.error, undefined, "error");
+		strictEqual(components.scheme, "wss", "scheme");
+		strictEqual(components.userinfo, undefined, "userinfo");
+		strictEqual(components.host, "example.com", "host");
+		strictEqual(components.port, undefined, "port");
+		strictEqual(components.path, undefined, "path");
+		strictEqual(components.query, undefined, "query");
+		strictEqual(components.fragment, undefined, "fragment");
+		strictEqual(components.resourceName, "/chat", "resourceName");
+		strictEqual(components.secure, true, "secure");
+
+		components = URI.parse('wss://example.com/foo?bar=baz');
+		strictEqual(components.error, undefined, "error");
+		strictEqual(components.scheme, "wss", "scheme");
+		strictEqual(components.userinfo, undefined, "userinfo");
+		strictEqual(components.host, "example.com", "host");
+		strictEqual(components.port, undefined, "port");
+		strictEqual(components.path, undefined, "path");
+		strictEqual(components.query, undefined, "query");
+		strictEqual(components.fragment, undefined, "fragment");
+		strictEqual(components.resourceName, "/foo?bar=baz", "resourceName");
+		strictEqual(components.secure, true, "secure");
+
+		components = URI.parse('wss://example.com/?bar=baz');
+		strictEqual(components.resourceName, "/?bar=baz", "resourceName");
+	});
+
+	test("WSS Serialize", function () {
+		strictEqual(URI.serialize({scheme : "wss"}), "wss:");
+		strictEqual(URI.serialize({scheme : "wss", host: "example.com"}), "wss://example.com");
+		strictEqual(URI.serialize({scheme : "wss", resourceName: '/'}), "wss:");
+		strictEqual(URI.serialize({scheme : "wss", resourceName: '/foo'}), "wss:/foo");
+		strictEqual(URI.serialize({scheme : "wss", resourceName: '/foo?bar'}), "wss:/foo?bar");
+		strictEqual(URI.serialize({scheme : "wss", secure: false}), "ws:");
+		strictEqual(URI.serialize({scheme : "wss", secure: true}), "wss:");
+		strictEqual(URI.serialize({scheme : "wss", host: "example.com", resourceName: '/foo'}), "wss://example.com/foo");
+		strictEqual(URI.serialize({scheme : "wss", host: "example.com", resourceName: '/foo?bar'}), "wss://example.com/foo?bar");
+		strictEqual(URI.serialize({scheme : "wss", host: "example.com", secure: false}), "ws://example.com");
+		strictEqual(URI.serialize({scheme : "wss", host: "example.com", secure: true}), "wss://example.com");
+		strictEqual(URI.serialize({scheme : "wss", host: "example.com", resourceName: '/foo?bar', secure: false}), "ws://example.com/foo?bar");
+		strictEqual(URI.serialize({scheme : "wss", host: "example.com", resourceName: '/foo?bar', secure: true}), "wss://example.com/foo?bar");
+	});
+	
+	test("WSS Equal", function () {
+		strictEqual(URI.equal("WSS://ABC.COM:443/chat#one", "wss://abc.com/chat"), true);
+	});
+	
+	test("WSS Normalize", function () {
+		strictEqual(URI.normalize("wss://example.com:443/foo#hash"), "wss://example.com/foo");
 	});
 
 }
