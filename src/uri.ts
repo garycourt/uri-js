@@ -61,15 +61,6 @@ export interface URIOptions {
 	domainHost?:boolean;
 }
 
-export interface URISchemeHandler<Components extends URIComponents = URIComponents, Options extends URIOptions = URIOptions, ParentComponents extends URIComponents = URIComponents> {
-	scheme:string;
-	parse(components:ParentComponents, options:Options):Components;
-	serialize(components:Components, options:Options):ParentComponents;
-	unicodeSupport?:boolean;
-	domainHost?:boolean;
-	absolutePath?:boolean;
-}
-
 export interface URIRegExps {
 	NOT_SCHEME : RegExp,
 	NOT_USERINFO : RegExp,
@@ -84,6 +75,17 @@ export interface URIRegExps {
 	PCT_ENCODED : RegExp,
 	IPV4ADDRESS : RegExp,
 	IPV6ADDRESS : RegExp,
+}
+
+
+export interface URISchemeHandler<Components extends URIComponents = URIComponents, Options extends URIOptions = URIOptions, ParentComponents extends URIComponents = URIComponents> {
+	scheme:string;
+	parse(components:ParentComponents, options:Options):Components;
+	serialize(components:Components, options:Options):ParentComponents;
+	normalizeComponentEncoding?(components:Components, options:URIRegExps):ParentComponents;
+	unicodeSupport?:boolean;
+	domainHost?:boolean;
+	absolutePath?:boolean;
 }
 
 export const SCHEMES:{[scheme:string]:URISchemeHandler} = {};
@@ -303,10 +305,18 @@ export function parse(uriString:string, options:URIOptions = {}):URIComponents {
 				}
 			}
 			//convert IRI -> URI
-			_normalizeComponentEncoding(components, URI_PROTOCOL);
+			if (schemeHandler && schemeHandler.normalizeComponentEncoding) {
+				schemeHandler.normalizeComponentEncoding(components, URI_PROTOCOL);
+			} else {
+				_normalizeComponentEncoding(components, URI_PROTOCOL);
+			}
 		} else {
 			//normalize encodings
-			_normalizeComponentEncoding(components, protocol);
+			if (schemeHandler && schemeHandler.normalizeComponentEncoding) {
+				schemeHandler.normalizeComponentEncoding(components, protocol);
+			} else {
+				_normalizeComponentEncoding(components, protocol);
+			}
 		}
 
 		//perform scheme specific parsing
@@ -404,7 +414,11 @@ export function serialize(components:URIComponents, options:URIOptions = {}):str
 	}
 
 	//normalize encoding
-	_normalizeComponentEncoding(components, protocol);
+	if (schemeHandler && schemeHandler.normalizeComponentEncoding) {
+		schemeHandler.normalizeComponentEncoding(components, protocol);
+	} else {
+		_normalizeComponentEncoding(components, protocol);
+	}
 
 	if (options.reference !== "suffix" && components.scheme) {
 		uriTokens.push(components.scheme);

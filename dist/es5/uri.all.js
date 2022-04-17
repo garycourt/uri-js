@@ -708,7 +708,7 @@ var punycode = {
 /**
  * URI.js
  *
- * @fileoverview An RFC 3986 compliant, scheme extendable URI parsing/validating/resolving library for JavaScript.
+ * @fileoverview An RFC 3986 compliant, scheme extendable URI parsing/normalizing/resolving/serializing library for JavaScript.
  * @author <a href="mailto:gary.court@gmail.com">Gary Court</a>
  * @see http://github.com/garycourt/uri-js
  */
@@ -933,10 +933,18 @@ function parse(uriString) {
                 }
             }
             //convert IRI -> URI
-            _normalizeComponentEncoding(components, URI_PROTOCOL);
+            if (schemeHandler && schemeHandler.normalizeComponentEncoding) {
+                schemeHandler.normalizeComponentEncoding(components, URI_PROTOCOL);
+            } else {
+                _normalizeComponentEncoding(components, URI_PROTOCOL);
+            }
         } else {
             //normalize encodings
-            _normalizeComponentEncoding(components, protocol);
+            if (schemeHandler && schemeHandler.normalizeComponentEncoding) {
+                schemeHandler.normalizeComponentEncoding(components, protocol);
+            } else {
+                _normalizeComponentEncoding(components, protocol);
+            }
         }
         //perform scheme specific parsing
         if (schemeHandler && schemeHandler.parse) {
@@ -1023,7 +1031,11 @@ function serialize(components) {
             }
     }
     //normalize encoding
-    _normalizeComponentEncoding(components, protocol);
+    if (schemeHandler && schemeHandler.normalizeComponentEncoding) {
+        schemeHandler.normalizeComponentEncoding(components, protocol);
+    } else {
+        _normalizeComponentEncoding(components, protocol);
+    }
     if (options.reference !== "suffix" && components.scheme) {
         uriTokens.push(components.scheme);
         uriTokens.push(":");
