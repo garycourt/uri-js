@@ -10,7 +10,6 @@
   "files": [
     "dist",
     "package.json",
-    "yarn.lock",
     "README.md",
     "CHANGELOG",
     "LICENSE"
