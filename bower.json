@@ -35,7 +35,7 @@
     "url": "http://github.com/garycourt/uri-js"
   },
   "dependencies": {
-    "punycode": "^2.1.0"
+    "punycode": "^2.3.0"
   },
   "ignore": [
     "**/.*",
