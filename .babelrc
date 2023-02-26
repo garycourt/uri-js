@@ -1,0 +1,6 @@
+{
+  "presets": ["@babel/preset-env", {"es2015": {"modules": false}}],
+  "exclude": "node_modules/**",
+  "plugins": ["@babel/plugin-external-helpers"],
+  "babelHelpers": false
+}
