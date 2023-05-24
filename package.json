@@ -75,10 +75,5 @@
   },
   "dependencies": {
     "punycode": "^2.1.0"
-  },
-  "resolutions": {
-    "glob-parent": "5.1.2",
-    "braces": "2.3.1",
-    "json5": "2.2.2"
   }
 }
