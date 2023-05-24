@@ -73,10 +73,5 @@
   },
   "dependencies": {
     "punycode": "^2.1.0"
-  },
-  "resolutions": {
-    "node_modules/mocha": {
-      "nanoid": "3.1.31"
-    }
   }
 }
