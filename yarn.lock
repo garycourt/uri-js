@@ -730,8 +730,8 @@ brace-expansion@^2.0.1:
   dependencies:
     balanced-match "^1.0.0"
 
-braces@^1.8.2:
-  version "1.8.5"
+braces@^2.3.1:
+  version "2.3.1"
   resolved "https://registry.npmjs.org/braces/-/braces-1.8.5.tgz"
   integrity sha512-xU7bpz2ytJl1bH9cgIurjpg/n8Gohy9GTw81heDYLJQ4RU60dlyJsa+atVF2pI0yMMvKxI9HkKwjePCj5XI1hw==
   dependencies:
