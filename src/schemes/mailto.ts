@@ -1,6 +1,6 @@
 import { URISchemeHandler, URIComponents, URIOptions } from "../uri";
 import { pctEncChar, pctDecChars, unescapeComponent } from "../uri";
-import punycode from "punycode";
+import punycode from "punycode/";
 import { merge, subexp, toUpperCase, toArray } from "../util";
 
 export interface MailtoHeaders {

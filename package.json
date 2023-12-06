@@ -72,6 +72,6 @@
     "uglify-js": "^2.8.14"
   },
   "dependencies": {
-    "punycode": "^2.1.0"
+    "punycode": "^2.3.1"
   }
 }
