@@ -1,4 +1,4 @@
-declare module 'punycode' {
+declare module 'punycode/' {
 	function ucs2decode(string:string):Array<number>;
 	function ucs2encode(array:Array<number>):string;
 	function decode(string:string):string;

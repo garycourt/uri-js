@@ -225,7 +225,7 @@ var delimiter = '-'; // '\x2D'
 
 /** Regular expressions */
 var regexPunycode = /^xn--/;
-var regexNonASCII = /[^\0-\x7E]/; // non-ASCII chars
+var regexNonASCII = /[^\0-\x7F]/; // Note: U+007F DEL is excluded too.
 var regexSeparators = /[\x2E\u3002\uFF0E\uFF61]/g; // RFC 3490 separators
 
 /** Error messages */
@@ -260,11 +260,11 @@ function error$1(type) {
  * item.
  * @returns {Array} A new array of values returned by the callback function.
  */
-function map(array, fn) {
+function map(array, callback) {
 	var result = [];
 	var length = array.length;
 	while (length--) {
-		result[length] = fn(array[length]);
+		result[length] = callback(array[length]);
 	}
 	return result;
 }
@@ -276,22 +276,22 @@ function map(array, fn) {
  * @param {String} domain The domain name or email address.
  * @param {Function} callback The function that gets called for every
  * character.
- * @returns {Array} A new string of characters returned by the callback
+ * @returns {String} A new string of characters returned by the callback
  * function.
  */
-function mapDomain(string, fn) {
-	var parts = string.split('@');
+function mapDomain(domain, callback) {
+	var parts = domain.split('@');
 	var result = '';
 	if (parts.length > 1) {
 		// In email addresses, only the domain name should be punycoded. Leave
 		// the local part (i.e. everything up to `@`) intact.
 		result = parts[0] + '@';
-		string = parts[1];
+		domain = parts[1];
 	}
 	// Avoid `split(regex)` for IE8 compatibility. See #17.
-	string = string.replace(regexSeparators, '\x2E');
-	var labels = string.split('.');
-	var encoded = map(labels, fn).join('.');
+	domain = domain.replace(regexSeparators, '\x2E');
+	var labels = domain.split('.');
+	var encoded = map(labels, callback).join('.');
 	return result + encoded;
 }
 
@@ -341,8 +341,8 @@ function ucs2decode(string) {
  * @param {Array} codePoints The array of numeric code points.
  * @returns {String} The new Unicode string (UCS-2).
  */
-var ucs2encode = function ucs2encode(array) {
-	return String.fromCodePoint.apply(String, toConsumableArray(array));
+var ucs2encode = function ucs2encode(codePoints) {
+	return String.fromCodePoint.apply(String, toConsumableArray(codePoints));
 };
 
 /**
@@ -355,13 +355,13 @@ var ucs2encode = function ucs2encode(array) {
  * the code point does not represent a value.
  */
 var basicToDigit = function basicToDigit(codePoint) {
-	if (codePoint - 0x30 < 0x0A) {
-		return codePoint - 0x16;
+	if (codePoint >= 0x30 && codePoint < 0x3A) {
+		return 26 + (codePoint - 0x30);
 	}
-	if (codePoint - 0x41 < 0x1A) {
+	if (codePoint >= 0x41 && codePoint < 0x5B) {
 		return codePoint - 0x41;
 	}
-	if (codePoint - 0x61 < 0x1A) {
+	if (codePoint >= 0x61 && codePoint < 0x7B) {
 		return codePoint - 0x61;
 	}
 	return base;
@@ -450,7 +450,10 @@ var decode = function decode(input) {
 
 			var digit = basicToDigit(input.charCodeAt(index++));
 
-			if (digit >= base || digit > floor((maxInt - i) / w)) {
+			if (digit >= base) {
+				error$1('invalid-input');
+			}
+			if (digit > floor((maxInt - i) / w)) {
 				error$1('overflow');
 			}
 
@@ -603,7 +606,7 @@ var encode = function encode(input) {
 				if (_currentValue < n && ++delta > maxInt) {
 					error$1('overflow');
 				}
-				if (_currentValue == n) {
+				if (_currentValue === n) {
 					// Represent delta as a generalized variable-length integer.
 					var q = delta;
 					for (var k = base;; /* no condition */k += base) {
@@ -618,7 +621,7 @@ var encode = function encode(input) {
 					}
 
 					output.push(stringFromCharCode(digitToBasic(q, 0)));
-					bias = adapt(delta, handledCPCountPlusOne, handledCPCount == basicLength);
+					bias = adapt(delta, handledCPCountPlusOne, handledCPCount === basicLength);
 					delta = 0;
 					++handledCPCount;
 				}
@@ -687,7 +690,7 @@ var punycode = {
   * @memberOf punycode
   * @type String
   */
-	'version': '2.1.0',
+	'version': '2.3.1',
 	/**
   * An object of methods to convert from JavaScript's internal character
   * representation (UCS-2) to Unicode code points, and back.
@@ -708,7 +711,7 @@ var punycode = {
 /**
  * URI.js
  *
- * @fileoverview An RFC 3986 compliant, scheme extendable URI parsing/validating/resolving library for JavaScript.
+ * @fileoverview An RFC 3986 compliant, scheme extendable URI parsing/normalizing/resolving/serializing library for JavaScript.
  * @author <a href="mailto:gary.court@gmail.com">Gary Court</a>
  * @see http://github.com/garycourt/uri-js
  */

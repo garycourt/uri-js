@@ -36,7 +36,7 @@
 
 import URI_PROTOCOL from "./regexps-uri";
 import IRI_PROTOCOL from "./regexps-iri";
-import punycode from "punycode";
+import punycode from "punycode/";
 import { toUpperCase, typeOf, assign } from "./util";
 
 export interface URIComponents {
