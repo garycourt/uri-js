@@ -1,5 +1,5 @@
 import { pctEncChar, pctDecChars, unescapeComponent } from "../uri";
-import punycode from "punycode";
+import punycode from "punycode/";
 import { merge, subexp, toUpperCase, toArray } from "../util";
 const O = {};
 const isIRI = true;
