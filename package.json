@@ -19,7 +19,7 @@
     "build:esnext": "tsc",
     "build:es5": "rollup -c && cp dist/esnext/uri.d.ts dist/es5/uri.all.d.ts && npm run build:es5:fix-sourcemap",
     "build:es5:fix-sourcemap": "sorcery -i dist/es5/uri.all.js",
-    "build:es5:min": "uglifyjs dist/es5/uri.all.js --support-ie8 --output dist/es5/uri.all.min.js --in-source-map dist/es5/uri.all.js.map --source-map uri.all.min.js.map --comments --compress --mangle --pure-funcs merge subexp && mv uri.all.min.js.map dist/es5/ && cp dist/es5/uri.all.d.ts dist/es5/uri.all.min.d.ts",
+    "build:es5:min": "uglifyjs dist/es5/uri.all.js -o dist/es5/uri.all.min.js --ie8 --source-map content=dist/es5/uri.all.js.map,filename=dist/es5/uri.all.min.js.map,url=uri.all.min.js.map --comments --compress pure_funcs=['merge','subexp'] --mangle && cp dist/es5/uri.all.d.ts dist/es5/uri.all.min.d.ts",
     "build": "npm run build:esnext && npm run build:es5 && npm run build:es5:min",
     "clean": "rm -rf dist",
     "test": "mocha -u mocha-qunit-ui dist/es5/uri.all.js tests/tests.js"
@@ -69,7 +69,7 @@
     "rollup-plugin-node-resolve": "^2.0.0",
     "sorcery": "^0.10.0",
     "typescript": "^2.8.1",
-    "uglify-js": "^2.8.14"
+    "uglify-js": "^3.19.3"
   },
   "dependencies": {
     "punycode": "^2.1.0"
