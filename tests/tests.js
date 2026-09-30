@@ -477,6 +477,24 @@ test("IRI Normalizing", function () {
 	strictEqual(URI.normalize("uri://www.example.org/red%09ros\xE9#red", IRI_OPTION), "uri://www.example.org/red%09ros\xE9#red");
 });
 
+test("removeDotSegments Unicode line/paragraph separators", function () {
+	var LS = "\u2028";
+	var PS = "\u2029";
+
+	strictEqual(URI.removeDotSegments("/a/./b/../c"), "/a/c");
+	strictEqual(URI.removeDotSegments("/a/b/c/./../../g"), "/a/g");
+	strictEqual(URI.removeDotSegments("mid/content=5/../6"), "mid/6");
+
+	strictEqual(URI.removeDotSegments("/" + LS + "foo"), "/" + LS + "foo");
+	strictEqual(URI.removeDotSegments("/foo" + LS + "bar"), "/foo" + LS + "bar");
+	strictEqual(URI.removeDotSegments("/" + PS + "x"), "/" + PS + "x");
+	strictEqual(URI.removeDotSegments("/a/" + LS + "/b"), "/a/" + LS + "/b");
+	strictEqual(URI.removeDotSegments("/" + LS + "/../x"), "/x");
+
+	strictEqual(URI.normalize("uri://example.com/" + LS + "a", IRI_OPTION), "uri://example.com/" + LS + "a");
+	strictEqual(URI.resolve("uri://example.com/dir/file", "../" + LS + "x", IRI_OPTION), "uri://example.com/" + LS + "x");
+});
+
 test("IRI Equals", function () {
 	//example from RFC 3987
 	strictEqual(URI.equal("example://a/b/c/%7Bfoo%7D/ros\xE9", "eXAMPLE://a/./b/../b/%63/%7bfoo%7d/ros%C3%A9", IRI_OPTION), true);

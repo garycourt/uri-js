@@ -346,12 +346,14 @@ const RDS1 = /^\.\.?\//;
 const RDS2 = /^\/\.(\/|$)/;
 const RDS3 = /^\/\.\.(\/|$)/;
 const RDS4 = /^\.\.?$/;
-const RDS5 = /^\/?(?:.|\n)*?(?=\/|$)/;
+const RDS5 = /^\/?[\s\S]*?(?=\/|$)/;
 
 export function removeDotSegments(input:string):string {
 	const output:Array<string> = [];
 
 	while (input.length) {
+		const before = input.length;
+
 		if (input.match(RDS1)) {
 			input = input.replace(RDS1, "");
 		} else if (input.match(RDS2)) {
@@ -363,13 +365,17 @@ export function removeDotSegments(input:string):string {
 			input = "";
 		} else {
 			const im = input.match(RDS5);
-			if (im) {
+			if (im && im[0].length) {
 				const s = im[0];
 				input = input.slice(s.length);
 				output.push(s);
 			} else {
 				throw new Error("Unexpected dot segment condition");
 			}
+		}
+
+		if (input.length >= before) {
+			throw new Error("Unexpected dot segment condition");
 		}
 	}
 

@@ -971,10 +971,11 @@ function _recomposeAuthority(components, options) {
 var RDS1 = /^\.\.?\//;
 var RDS2 = /^\/\.(\/|$)/;
 var RDS3 = /^\/\.\.(\/|$)/;
-var RDS5 = /^\/?(?:.|\n)*?(?=\/|$)/;
+var RDS5 = /^\/?[\s\S]*?(?=\/|$)/;
 function removeDotSegments(input) {
     var output = [];
     while (input.length) {
+        var before = input.length;
         if (input.match(RDS1)) {
             input = input.replace(RDS1, "");
         } else if (input.match(RDS2)) {
@@ -986,13 +987,16 @@ function removeDotSegments(input) {
             input = "";
         } else {
             var im = input.match(RDS5);
-            if (im) {
+            if (im && im[0].length) {
                 var s = im[0];
                 input = input.slice(s.length);
                 output.push(s);
             } else {
                 throw new Error("Unexpected dot segment condition");
             }
+        }
+        if (input.length >= before) {
+            throw new Error("Unexpected dot segment condition");
         }
     }
     return output.join("");
