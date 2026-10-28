@@ -88,6 +88,7 @@ const handler:URISchemeHandler<MailtoComponents> =  {
 
 				switch (hfield[0]) {
 					case "to":
+						if (hfield[1] === undefined) break;
 						const toAddrs = hfield[1].split(",");
 						for (let x = 0, xl = toAddrs.length; x < xl; ++x) {
 							to.push(toAddrs[x]);

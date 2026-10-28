@@ -745,6 +745,52 @@ if (URI.SCHEMES["mailto"]) {
 
 	});
 
+	function testMissingTo(name, input, recipients, subject, body, headers) {
+		for (var unicode = 0; unicode < 2; ++unicode) {
+			(function (unicodeSupport) {
+				test("Mailto Parse missing to value: " + name + (unicodeSupport ? " (Unicode)" : ""), function () {
+					var components = URI.parse(input, {unicodeSupport : unicodeSupport});
+					deepEqual(components.to, recipients, "recipients");
+					strictEqual(components.subject, subject, "subject");
+					strictEqual(components.body, body, "body");
+					deepEqual(components.headers, headers, "other headers");
+					strictEqual(components.query, undefined, "query consumed");
+					strictEqual(components.error, undefined, "no address error");
+				});
+			})(!!unicode);
+		}
+	}
+
+	testMissingTo("empty recipient list", "mailto:?to", []);
+	testMissingTo("path recipient", "mailto:alice@example.com?to", ["alice@example.com"]);
+	testMissingTo("mixed headers", "mailto:alice@example.com?subject=hello%20there&to&body=one%26two&cc=bob@example.com",
+		["alice@example.com"], "hello there", "one&two", {cc : "bob@example.com"});
+	testMissingTo("repeated recipient headers", "mailto:alice@example.com?to&to=bob@example.com,charlie@EXAMPLE.COM&to&subject=hello",
+		["alice@example.com", "bob@example.com", "charlie@example.com"], "hello");
+
+	test("Mailto Normalize missing to value", function () {
+		strictEqual(URI.normalize("mailto:alice@example.com?subject=hello&to&body=world"),
+			URI.normalize("mailto:alice@example.com?subject=hello&body=world"));
+	});
+
+	test("Mailto Equals missing to value", function () {
+		strictEqual(URI.equal("mailto:alice@example.com?to", "mailto:alice@example.com"), true);
+	});
+
+	test("Mailto Parse explicit empty to value", function () {
+		// An explicit empty value still contributes an empty recipient.
+		var components = URI.parse("mailto:alice@example.com?to=");
+		deepEqual(components.to, ["alice@example.com", ""]);
+	});
+
+	test("Mailto Parse other headers without values", function () {
+		var components = URI.parse("mailto:alice@example.com?subject&body&other");
+		deepEqual(components.to, ["alice@example.com"]);
+		strictEqual(components.subject, undefined);
+		strictEqual(components.body, undefined);
+		deepEqual(components.headers, {other : undefined});
+	});
+
 	test("Mailto Serialize", function () {
 		var components;
 

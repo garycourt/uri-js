@@ -708,7 +708,7 @@ var punycode = {
 /**
  * URI.js
  *
- * @fileoverview An RFC 3986 compliant, scheme extendable URI parsing/validating/resolving library for JavaScript.
+ * @fileoverview An RFC 3986 compliant, scheme extendable URI parsing/normalizing/resolving/serializing library for JavaScript.
  * @author <a href="mailto:gary.court@gmail.com">Gary Court</a>
  * @see http://github.com/garycourt/uri-js
  */
@@ -1284,6 +1284,7 @@ var handler$4 = {
                 var hfield = hfields[x].split("=");
                 switch (hfield[0]) {
                     case "to":
+                        if (hfield[1] === undefined) break;
                         var toAddrs = hfield[1].split(",");
                         for (var _x = 0, _xl = toAddrs.length; _x < _xl; ++_x) {
                             to.push(toAddrs[_x]);
