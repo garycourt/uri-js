@@ -1,7 +1,7 @@
 /**
  * URI.js
  *
- * @fileoverview An RFC 3986 compliant, scheme extendable URI parsing/validating/resolving library for JavaScript.
+ * @fileoverview An RFC 3986 compliant, scheme extendable URI parsing/normalizing/resolving/serializing library for JavaScript.
  * @author <a href="mailto:gary.court@gmail.com">Gary Court</a>
  * @see http://github.com/garycourt/uri-js
  */
@@ -57,11 +57,11 @@ export function pctDecChars(str) {
     while (i < il) {
         const c = parseInt(str.substr(i + 1, 2), 16);
         if (c < 128) {
-            newStr += String.fromCharCode(c);
+            newStr += (/^%[0-7][0-9A-F]$/i.test(str.substr(i, 3)) ? String.fromCharCode(c) : str.substr(i, 3));
             i += 3;
         }
         else if (c >= 194 && c < 224) {
-            if ((il - i) >= 6) {
+            if (/^%[CD][0-9A-F]%[89AB][0-9A-F]$/i.test(str.substr(i, 6))) {
                 const c2 = parseInt(str.substr(i + 4, 2), 16);
                 newStr += String.fromCharCode(((c & 31) << 6) | (c2 & 63));
             }
@@ -71,8 +71,10 @@ export function pctDecChars(str) {
             i += 6;
         }
         else if (c >= 224) {
-            if ((il - i) >= 9) {
-                const c2 = parseInt(str.substr(i + 4, 2), 16);
+            const c2 = parseInt(str.substr(i + 4, 2), 16);
+            // Exclude overlong encodings, surrogates, and unsupported leading bytes.
+            if (/^%E[0-9A-F](%[89AB][0-9A-F]){2}$/i.test(str.substr(i, 9)) &&
+                (c !== 224 || c2 >= 160) && (c !== 237 || c2 < 160)) {
                 const c3 = parseInt(str.substr(i + 7, 2), 16);
                 newStr += String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63));
             }

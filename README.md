@@ -91,6 +91,12 @@ All of the above functions can accept an additional options argument that is an 
 
 	If set to `true`, the library will treat the `host` component as a domain name, and convert IDNs (International Domain Names) as per [RFC 5891](http://www.ietf.org/rfc/rfc5891.txt).
 
+### Percent decoding
+
+`URI.unescapeComponent()` decodes ASCII and valid two- or three-byte UTF-8 percent-encoded sequences. Malformed sequences (including invalid continuation bytes, overlong encodings and UTF-16 surrogates) are left percent-encoded rather than converted into characters. Four-byte UTF-8 sequences are not supported by this decoder and are also left percent-encoded.
+
+This prevents malformed encodings from producing ASCII metacharacters (CVE-2026-93751). It does not replace application-level validation of decoded paths, headers or other security-sensitive values.
+
 ## Scheme Extendable
 
 URI.js supports inserting custom [scheme](http://en.wikipedia.org/wiki/URI_scheme) dependent processing rules. Currently, URI.js has built in support for the following schemes:
