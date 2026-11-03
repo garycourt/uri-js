@@ -439,6 +439,56 @@ test("Unescape Component", function () {
 	strictEqual(URI.unescapeComponent(encodeURIComponent("\u30a2")), "\u30a2");
 });
 
+test("Unescape Component preserves malformed UTF-8", function () {
+	var inputs = [
+		"%C0%AE", "%C1%AF", "%C2%2E", "%DF%7F",
+		"%E0%40%2E", "%E0%80%AE", "%E0%9F%BF",
+		"%E1%7F%80", "%E1%80%7F", "%E1%C0%80", "%E1%80%C0",
+		"%ED%A0%80", "%ED%BF%BF", "%EF%BF%7F",
+		"%F0%80%AE", "%F5%80%80", "%FF%BF%BF",
+		"%E0%40%0D%E0%40%0A",
+		"%C2", "%E0", "%E0%A0", "%80", "%BF",
+		"%", "%2", "%GG"
+	];
+	inputs.forEach(function (input) {
+		strictEqual(URI.unescapeComponent(input), input, input);
+		strictEqual(URI.unescapeComponent(input, { iri : true }), input, input + " (IRI)");
+		strictEqual(URI.unescapeComponent(input.toLowerCase()), input.toLowerCase(), input + " (lowercase)");
+	});
+	strictEqual(URI.unescapeComponent("%41%E0%40%2E%C3%A9%42"), "A%E0%40%2E\u00E9B");
+	strictEqual(URI.unescapeComponent("%E0%40%2E%E0%40%2E%2F"), "%E0%40%2E%E0%40%2E/");
+});
+
+test("Percent decoding validates complete percent-encoded bytes", function () {
+	["%0G", "%C2x80", "%C2%8G", "%E1x80%80", "%E1%80x80", "%E1%8G%80", "%E1%80%8G"].forEach(function (input) {
+		strictEqual(URI.pctDecChars(input), input, input);
+	});
+});
+
+test("Unescape Component preserves unsupported UTF-8 leading bytes", function () {
+	["%F0%90%80%80", "%F4%8F%BF%BF", "%F4%90%80%80", "%F5%80%80%80"].forEach(function (input) {
+		strictEqual(URI.unescapeComponent(input), input, input);
+		strictEqual(URI.pctDecChars(input), input, input + " (direct)");
+	});
+});
+
+test("Percent decoding accepts valid UTF-8 boundaries", function () {
+	["\u0000", "\u007F", "\u0080", "\u07FF", "\u0800", "\u0FFF", "\u1000", "\uD7FF", "\uE000", "\uFFFF"].forEach(function (chr) {
+		var input = encodeURIComponent(chr);
+		strictEqual(URI.pctDecChars(input), chr, input);
+		strictEqual(URI.unescapeComponent(input), chr, input);
+	});
+});
+
+test("URI normalization does not decode malformed UTF-8 to dot segments", function () {
+	var input = "http://example.com/safe/%E0%40%2E%E0%40%2E/secret";
+	strictEqual(URI.parse(input).path, "/safe/%E0%40%2E%E0%40%2E/secret");
+	strictEqual(URI.serialize({ scheme : "http", host : "example.com", path : "/safe/%E0%40%2E%E0%40%2E/secret" }), input);
+	strictEqual(URI.normalize(input), input);
+	strictEqual(URI.resolve("http://example.com/safe/", "%E0%40%2E%E0%40%2E/secret"), input);
+	strictEqual(URI.normalize(input, { iri : true }), input);
+});
+
 //
 // IRI
 //
